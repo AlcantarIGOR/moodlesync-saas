@@ -101,17 +101,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
       label: "Configuración",
       icon: <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
     },
-    ...(session.plan !== "PREMIUM" ? [{
-      href: "/dashboard/upgrade",
-      label: "Actualizar a Premium",
-      accent: true,
-      icon: <svg viewBox="0 0 16 16" fill="none"><path d="M2 13l6-9 6 9H2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
-    }] : [{
-      href: "/dashboard/upgrade",
-      label: "Plan Premium",
-      accent: true,
-      icon: <svg viewBox="0 0 16 16" fill="none"><path d="M2 13l6-9 6 9H2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
-    }]),
   ]
 
   return (

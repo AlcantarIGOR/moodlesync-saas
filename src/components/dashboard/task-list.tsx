@@ -238,7 +238,7 @@ function toFilter(raw: string | undefined): Filter {
   return "todas"
 }
 
-export function TaskList({ tasks, plan, moodleBaseUrl, initialFilter }: { tasks: Task[]; plan: string; moodleBaseUrl?: string; initialFilter?: string }) {
+export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[]; moodleBaseUrl?: string; initialFilter?: string }) {
   const [filter, setFilter] = useState<Filter>(() => toFilter(initialFilter))
   const [search, setSearch] = useState("")
   const [showAddModal, setShowAddModal] = useState(false)
@@ -269,9 +269,6 @@ export function TaskList({ tasks, plan, moodleBaseUrl, initialFilter }: { tasks:
     { label: "PENDIENTES", tasks: pendientes, color: "var(--blue)" },
     { label: "COMPLETADAS",tasks: completadas,color: "var(--green)" },
   ].filter((s) => s.tasks.length > 0)
-
-  const manualCount = tasks.filter((t) => t.isManual).length
-  const atLimit = plan === "FREE" && manualCount >= 3
 
   return (
     <>
@@ -331,40 +328,20 @@ export function TaskList({ tasks, plan, moodleBaseUrl, initialFilter }: { tasks:
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-1.5 h-[34px] px-3 rounded-lg text-xs font-semibold transition-all ml-auto"
             style={{
-              background: atLimit ? "var(--s2)" : "var(--blue-d)",
-              border: atLimit ? "1px solid var(--b1)" : "1px solid var(--blue-b)",
-              color: atLimit ? "var(--tx2)" : "var(--blue)",
+              background: "var(--blue-d)",
+              border: "1px solid var(--blue-b)",
+              color: "var(--blue)",
               cursor: "pointer",
             }}
-            title={atLimit ? "Límite de plan gratuito alcanzado" : "Nueva tarea manual"}
+            title="Nueva tarea manual"
           >
-            {atLimit ? (
-              <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                <path d="M5.5 1.5L2 9.5h7L5.5 1.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                <path d="M5.5 4.5v2.5M5.5 8v.3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-              </svg>
-            ) : (
-              <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            )}
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
             Nueva tarea
           </button>
         </div>
 
-        {/* Freemium hint */}
-        {plan === "FREE" && (
-          <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-lg"
-            style={{ background: "var(--s2)", border: "1px solid var(--b1)" }}>
-            <span className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-              Tareas manuales: <strong style={{ color: atLimit ? "var(--amber)" : "var(--tx)" }}>{manualCount}/3</strong>
-            </span>
-            <a href="/dashboard/upgrade" className="text-[11px] font-medium transition-all"
-              style={{ fontFamily: "var(--mono)", color: "var(--blue)", textDecoration: "none" }}>
-              Ver Premium →
-            </a>
-          </div>
-        )}
 
         {/* Sections */}
         {sections.length === 0 ? (

@@ -60,15 +60,6 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
-  {
-    href: "/dashboard/upgrade",
-    label: "Premium",
-    icon: (
-      <svg viewBox="0 0 16 16" fill="none">
-        <path d="M2 13l6-9 6 9H2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
 ]
 
 export function MobileBottomNav() {

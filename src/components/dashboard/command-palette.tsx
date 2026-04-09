@@ -18,7 +18,6 @@ const NAV_ITEMS = [
   { label: "Kanban",         href: "/dashboard/kanban",        hint: "vista tablero" },
   { label: "Calificaciones", href: "/dashboard/calificaciones",hint: "notas de Moodle" },
   { label: "Configuración",  href: "/dashboard/settings",      hint: "perfil y email" },
-  { label: "Premium",        href: "/dashboard/upgrade",       hint: "planes" },
 ]
 
 function fmtDate(d: string | null): string {

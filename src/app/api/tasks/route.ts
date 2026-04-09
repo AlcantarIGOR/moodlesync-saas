@@ -2,8 +2,6 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 
-const FREE_MANUAL_LIMIT = 3
-
 export async function GET(req: Request) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -35,18 +33,6 @@ export async function POST(req: Request) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  if (session.plan === "FREE") {
-    const count = await db.task.count({
-      where: { userId: session.user.id, isManual: true },
-    })
-    if (count >= FREE_MANUAL_LIMIT) {
-      return NextResponse.json(
-        { error: "LIMIT_REACHED", limit: FREE_MANUAL_LIMIT },
-        { status: 403 }
-      )
-    }
   }
 
   const body = await req.json()

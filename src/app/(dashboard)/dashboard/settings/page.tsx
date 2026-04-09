@@ -17,7 +17,7 @@ export default async function SettingsPage() {
   if (!user) redirect("/login")
 
   const initials = user.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
-  const isPremium = user.plan === "PREMIUM"
+  const isPremium = true // todos los usuarios tienen acceso completo por ahora
 
   return (
     <div className="flex flex-col h-full">
