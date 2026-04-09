@@ -183,7 +183,7 @@ export default async function LandingPage() {
             <div key={title}
               className="rounded-2xl p-5 flex flex-col gap-3 group transition-all"
               style={{ background: "var(--card)", border: "1px solid var(--b1)" }}
-              onMouseEnter={() => {}} // hover handled by CSS
+
             >
               <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: "var(--blue-d)", border: "1px solid var(--blue-b)", color: "var(--blue)" }}>
