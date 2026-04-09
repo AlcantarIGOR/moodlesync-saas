@@ -36,14 +36,18 @@ function buildColorMap(sessions: ClassSession[]): Map<string, (typeof SUBJECT_CO
   return map
 }
 
+function getNowMX(): Date {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
+}
+
 function getCurrentDayMX(): number {
   // JS getDay(): 0=Sun,1=Mon...6=Sat → convert to 0=Mon...6=Sun
-  const d = new Date().getDay()
+  const d = getNowMX().getDay()
   return d === 0 ? 6 : d - 1
 }
 
 function getCurrentTimeMinutes(): number {
-  const now = new Date()
+  const now = getNowMX()
   return now.getHours() * 60 + now.getMinutes()
 }
 

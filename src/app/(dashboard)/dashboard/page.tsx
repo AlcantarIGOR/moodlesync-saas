@@ -87,10 +87,16 @@ export default async function DashboardPage({
   const semLabel = semNum > 0 ? `${semNum}° semestre` : "todos los semestres"
 
   // ── Clase ahora ──
+  // Vercel corre en UTC — usar hora de México para comparar con los horarios de Mindbox
   const schedule = await db.classSession.findMany({ where: { userId: session.user.id } })
-  function toMins(t: string) { const [h, m] = t.split(":").map(Number); return h * 60 + (m ?? 0) }
-  const nowDay = (() => { const d = new Date().getDay(); return d === 0 ? 6 : d - 1 })()
-  const nowMins = new Date().getHours() * 60 + new Date().getMinutes()
+  function toMins(t: string | null | undefined): number {
+    if (!t) return 0
+    const [h, m] = t.split(":").map(Number)
+    return (isNaN(h) ? 0 : h) * 60 + (isNaN(m) ? 0 : m)
+  }
+  const nowMX   = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
+  const nowDay  = (() => { const d = nowMX.getDay(); return d === 0 ? 6 : d - 1 })()
+  const nowMins = nowMX.getHours() * 60 + nowMX.getMinutes()
   const activeClass = schedule.find(
     (s: ClassSession) => s.dayOfWeek === nowDay && toMins(s.startTime) <= nowMins && toMins(s.endTime) > nowMins
   ) ?? null
@@ -100,7 +106,8 @@ export default async function DashboardPage({
     if (today) return today
     for (let offset = 1; offset <= 6; offset++) {
       const nd = (nowDay + offset) % 7
-      const ns = schedule.filter((s: ClassSession) => s.dayOfWeek === nd).sort((a: ClassSession, b: ClassSession) => toMins(a.startTime) - toMins(b.startTime))[0]
+      const ns = schedule.filter((s: ClassSession) => s.dayOfWeek === nd)
+        .sort((a: ClassSession, b: ClassSession) => toMins(a.startTime) - toMins(b.startTime))[0]
       if (ns) return ns
     }
     return null
