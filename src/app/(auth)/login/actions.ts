@@ -12,7 +12,7 @@ export async function loginAction(formData: FormData) {
     await signIn("credentials", {
       username,
       password,
-      redirectTo: "/dashboard/tareas",
+      redirectTo: "/dashboard",
     })
   } catch (error) {
     if (error instanceof AuthError) {

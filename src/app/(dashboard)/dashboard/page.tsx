@@ -64,10 +64,12 @@ export default async function DashboardPage({
   const vencidas    = active.filter((t) => t.status === "PENDING" && isOverdue(t.dueDate)).length
   const pct = total > 0 ? Math.round((completadas / total) * 100) : 0
 
-  // Next 4 pending non-overdue tasks
-  const proximas = active
-    .filter((t) => t.status === "PENDING" && t.dueDate && !isOverdue(t.dueDate))
-    .slice(0, 4)
+  // Urgentes y vencidas primero, luego pendientes normales
+  const proximas = [
+    ...active.filter((t) => t.status === "PENDING" && isOverdue(t.dueDate)),
+    ...active.filter((t) => t.status === "PENDING" && t.dueDate && isUrgent(t.dueDate)),
+    ...active.filter((t) => t.status === "PENDING" && t.dueDate && !isOverdue(t.dueDate) && !isUrgent(t.dueDate)),
+  ].slice(0, 5)
 
   const COURSE_COLORS = [
     { bg: "var(--blue-d)", color: "var(--blue)" },
@@ -237,15 +239,18 @@ export default async function DashboardPage({
             <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}>
               {proximas.map((t) => {
                 const c = t.courseName ? cc(t.courseName) : { bg: "var(--blue-d)", color: "var(--blue)" }
+                const overdue = isOverdue(t.dueDate)
                 const urgent = isUrgent(t.dueDate)
+                const borderColor = overdue ? "var(--red-b)" : urgent ? "var(--amber-b)" : "var(--b1)"
+                const timeColor   = overdue ? "var(--red)"  : urgent ? "var(--amber)"   : "var(--tx2)"
                 return (
-                  <div key={t.id} className="rounded-xl p-4" style={{ background: "var(--card)", border: `1px solid ${urgent ? "var(--amber-b)" : "var(--b1)"}` }}>
+                  <div key={t.id} className="rounded-xl p-4" style={{ background: "var(--card)", border: `1px solid ${borderColor}` }}>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <span className="rounded px-2 py-0.5 text-[10px] font-medium shrink-0"
                         style={{ fontFamily: "var(--mono)", background: c.bg, color: c.color }}>
                         {t.courseName?.split(/\s+/).slice(-1)[0]?.slice(0, 10) ?? "—"}
                       </span>
-                      <span className="text-[10px] shrink-0" style={{ fontFamily: "var(--mono)", color: urgent ? "var(--amber)" : "var(--tx2)" }}>
+                      <span className="text-[10px] shrink-0" style={{ fontFamily: "var(--mono)", color: timeColor }}>
                         {timeLeft(t.dueDate)}
                       </span>
                     </div>
