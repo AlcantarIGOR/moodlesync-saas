@@ -1,26 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0a0a0b;
+  --card: #111113;
+  --s2: #1a1a1d;
+  --s3: #1f1f23;
+  --s4: #2a2a2f;
+  --b1: #1f1f23;
+  --b2: rgba(255,255,255,0.09);
+  --b3: rgba(255,255,255,0.15);
+  --tx: #e8e8e8;
+  --tx2: #6b6b6f;
+  --tx3: #3d3d40;
+  --blue: #4b8cf8;
+  --blue-d: rgba(75,140,248,0.12);
+  --blue-b: rgba(75,140,248,0.25);
+  --red: #ef4444;
+  --red-d: rgba(239,68,68,0.1);
+  --red-b: rgba(239,68,68,0.22);
+  --amber: #f59e0b;
+  --amber-d: rgba(245,158,11,0.1);
+  --amber-b: rgba(245,158,11,0.22);
+  --green: #22c55e;
+  --green-d: rgba(34,197,94,0.1);
+  --green-b: rgba(34,197,94,0.22);
+  --purple: #8b5cf6;
+  --purple-d: rgba(139,92,246,0.1);
+  --sans: 'Outfit', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --r: 8px;
+  --r2: 12px;
+  --r3: 16px;
+
+  /* Tailwind compat */
+  --background: 0 0% 4%;
+  --foreground: 0 0% 91%;
+  --card-foreground: 0 0% 91%;
+  --primary: 220 92% 63%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 5% 12%;
+  --secondary-foreground: 0 0% 91%;
+  --muted: 240 5% 12%;
+  --muted-foreground: 240 3% 43%;
+  --accent: 220 92% 63%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 5% 13%;
+  --input: 240 5% 13%;
+  --ring: 220 92% 63%;
+  --radius: 0.5rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--sans);
+  --font-mono: var(--mono);
+
+  --color-background: var(--bg);
+  --color-foreground: var(--tx);
+  --color-card: var(--card);
+  --color-card-foreground: var(--tx);
+  --color-primary: var(--blue);
+  --color-primary-foreground: #fff;
+  --color-secondary: var(--s2);
+  --color-secondary-foreground: var(--tx);
+  --color-muted: var(--s2);
+  --color-muted-foreground: var(--tx2);
+  --color-border: var(--b1);
+  --color-input: var(--s2);
+  --color-ring: var(--blue);
+  --color-destructive: var(--red);
+  --color-destructive-foreground: #fff;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  border-color: var(--b1);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--tx);
+  font-family: var(--sans);
+  font-size: 14px;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Mono utility */
+.font-mono { font-family: var(--mono) !important; }
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fadein { animation: fadein .18s ease; }
+
+.sidebar-link:hover { background: var(--s2) !important; color: var(--tx) !important; }
+
+.login-input:focus {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(75,140,248,.15);
+}
+.login-input::placeholder { color: var(--tx3); }
+
+/* Moodle HTML content rendered in task detail modal */
+.moodle-html p { margin-bottom: 0.5em; }
+.moodle-html p:last-child { margin-bottom: 0; }
+.moodle-html ul, .moodle-html ol { padding-left: 1.25em; margin-bottom: 0.5em; }
+.moodle-html li { margin-bottom: 0.25em; }
+.moodle-html strong, .moodle-html b { color: var(--tx); font-weight: 600; }
+.moodle-html a { color: var(--blue); text-decoration: underline; }
+.moodle-html img { max-width: 100%; border-radius: 6px; margin: 0.5em 0; }
+.moodle-html pre, .moodle-html code { font-family: var(--mono); background: var(--s3); padding: 0.2em 0.4em; border-radius: 4px; font-size: 11px; }
+.moodle-html h1,.moodle-html h2,.moodle-html h3 { color: var(--tx); font-weight: 600; margin-bottom: 0.4em; }
+.moodle-html table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.moodle-html td, .moodle-html th { border: 1px solid var(--b1); padding: 4px 8px; }
