@@ -2,7 +2,7 @@
 
 > Pega este archivo al inicio de cualquier conversación con Claude para continuar el desarrollo con contexto completo.
 
-**Última actualización:** 2026-04-09  
+**Última actualización:** 2026-04-13  
 **Desarrollado por:** Juan Alcántar — ONYX Inc.  
 **Stack:** Next.js 16 (App Router) · React 19 · Prisma 7 · Supabase PostgreSQL · Vercel
 
@@ -158,8 +158,24 @@ MINDBOX_ENCRYPTION_KEY=         # 64 chars hex (AES-256)
 
 ---
 
+### Fase 6 — Admin + Mobile UX + Optimizaciones (2026-04-13)
+
+- **Panel Admin** `/dashboard/admin` — solo accesible si `session.user.id === ADMIN_USER_ID`
+  - Stats: total usuarios, activos hoy/semana, con Mindbox, notif. email, Web Push
+  - Tabla desktop + cards mobile: nombre, ncontrol, conteos de tareas/califs/clases, Mindbox, createdAt, lastSeenAt
+- **`User.lastSeenAt`** — campo opcional `DateTime?` actualizado fire-and-forget en layout (sin await)
+- **Font optimization** — `next/font/google` (`Outfit` + `JetBrains Mono`) con `variable` CSS; eliminado import URL externo de Google Fonts
+- **Mobile UX** — `-webkit-tap-highlight-color: transparent`, `touch-action: manipulation`, `overscroll-behavior: none`, `text-size-adjust: 100%`; touch targets 44px en botón toggle de tareas
+- **Semester detection** expandida — palabras clave para ISC, Industrial, Mecatrónica, Electrónica, Bioquímica y Administración
+- **Mindbox ncontrol fix** — `replace(/^[a-zA-Z]+/i, "")` con fallback si el resultado tiene < 5 chars (soporta prefijos como `l21`)
+- **SW registration** — skip en localhost para evitar stale cache en dev
+- **Admin sidebar item** — visible solo para `isAdmin`; ícono de engranaje con indicador activo
+
+---
+
 ## Pendientes / Próximos pasos
 
+- [ ] Configurar `ADMIN_USER_ID` en Vercel env vars (ID cuid del usuario admin)
 - [ ] Conectar GitHub → Vercel para deploy automático en push
 - [ ] Dominio personalizado `moodlesync.app`
 - [ ] Verificar dominio en Resend (`recordatorios@moodlesync.app`)

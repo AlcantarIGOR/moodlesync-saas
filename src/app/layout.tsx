@@ -1,5 +1,21 @@
 import type { Metadata } from "next"
+import { Outfit, JetBrains_Mono } from "next/font/google"
+import Script from "next/script"
 import "./globals.css"
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-outfit",
+  display: "swap",
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "MoodleSync — by ONYX Inc.",
@@ -34,12 +50,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className="h-full">
+    <html lang="es" className={`h-full ${outfit.variable} ${jetbrainsMono.variable}`}>
       <body className="h-full antialiased">
         {children}
-        <script dangerouslySetInnerHTML={{
-          __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`
-        }} />
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator && location.hostname !== 'localhost'){navigator.serviceWorker.register('/sw.js')}`
+          }}
+        />
       </body>
     </html>
   )

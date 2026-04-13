@@ -15,6 +15,7 @@ model User {
   mindboxPassword String?
   plan            Plan               @default(FREE)
   createdAt       DateTime           @default(now())
+  lastSeenAt      DateTime?
   tasks           Task[]
   grades          Grade[]
   schedule        ClassSession[]

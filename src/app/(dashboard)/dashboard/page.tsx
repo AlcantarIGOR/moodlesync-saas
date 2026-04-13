@@ -124,7 +124,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
 
         {/* ── STAT CARDS ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -243,7 +243,7 @@ export default async function DashboardPage({
               </p>
             </div>
           ) : (
-            <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}>
+            <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(240px, 100%), 1fr))" }}>
               {proximas.map((t) => {
                 const c = t.courseName ? cc(t.courseName) : { bg: "var(--blue-d)", color: "var(--blue)" }
                 const overdue = isOverdue(t.dueDate)

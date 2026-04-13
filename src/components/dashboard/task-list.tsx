@@ -58,7 +58,6 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
   const router = useRouter()
   const [toggleLoading, setToggleLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
-  const [hovered, setHovered] = useState(false)
   const status = taskStatus(task)
   const st = STATUS_STYLE[status]
   const cc = task.courseName ? courseColor(task.courseName) : COURSE_COLORS[0]
@@ -121,12 +120,10 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
       }}
       onClick={() => onOpen(task)}
       onMouseEnter={(e) => {
-        setHovered(true)
         e.currentTarget.style.borderColor = "var(--b2)"
         e.currentTarget.style.transform = "translateY(-1px)"
       }}
       onMouseLeave={(e) => {
-        setHovered(false)
         e.currentTarget.style.borderColor = "var(--b1)"
         e.currentTarget.style.transform = "translateY(0)"
       }}
@@ -146,12 +143,12 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          {/* Delete button — only on manual tasks, visible on hover */}
-          {task.isManual && hovered && (
+          {/* Delete button — only on manual tasks; always visible for accessibility */}
+          {task.isManual && (
             <button
               onClick={handleDelete}
               disabled={deleteLoading}
-              className="w-5 h-5 rounded-md flex items-center justify-center transition-all"
+              className="w-7 h-7 rounded-md flex items-center justify-center transition-all"
               style={{ background: "var(--red-d)", border: "1px solid var(--red-b)", color: "var(--red)", cursor: "pointer" }}
               title="Eliminar tarea"
             >
@@ -166,21 +163,37 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
               )}
             </button>
           )}
-          {/* Toggle checkbox */}
+          {/* Toggle checkbox — min 44px touch target via padding wrapper */}
           <button
             onClick={toggle}
             disabled={toggleLoading}
-            className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all"
+            className="flex items-center justify-center shrink-0 transition-all"
             style={{
-              border: done ? "none" : "1.5px solid var(--b2)",
-              background: done ? "var(--green)" : "transparent",
+              width: 44,
+              height: 44,
+              margin: "-10px -10px -10px 0",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
             }}
+            title={done ? "Marcar como pendiente" : "Marcar como completada"}
           >
-            {done && (
-              <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                <path d="M2 5.5l2.5 2.5 4.5-4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
+            <span
+              className="flex items-center justify-center rounded-md transition-all"
+              style={{
+                width: 22,
+                height: 22,
+                border: done ? "none" : "1.5px solid var(--b2)",
+                background: done ? "var(--green)" : "transparent",
+                flexShrink: 0,
+              }}
+            >
+              {done && (
+                <svg width="12" height="12" viewBox="0 0 11 11" fill="none">
+                  <path d="M2 5.5l2.5 2.5 4.5-4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </span>
           </button>
         </div>
       </div>
@@ -284,33 +297,53 @@ export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[
       )}
 
       <div>
-        {/* Search + filter + add bar */}
-        <div className="flex items-center gap-3 mb-5 flex-wrap">
-          {/* Search */}
-          <div className="relative flex-1 max-w-xs min-w-[180px]">
-            <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ color: "var(--tx2)" }}>
-              <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" strokeWidth="1.3"/>
-              <path d="M9 9l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-            </svg>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar tarea..."
-              className="w-full h-[34px] rounded-lg pl-8 pr-3 text-xs outline-none"
+        {/* Search + filter + add bar — 2 rows on mobile, 1 row on desktop */}
+        <div className="flex flex-col gap-2 mb-5 md:flex-row md:items-center md:gap-3">
+          {/* Row 1: search + add button */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ color: "var(--tx2)" }}>
+                <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" strokeWidth="1.3"/>
+                <path d="M9 9l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar tarea..."
+                className="w-full h-[40px] rounded-lg pl-8 pr-3 text-xs outline-none md:h-[34px] md:max-w-xs"
+                style={{
+                  background: "var(--s2)",
+                  border: "1px solid var(--b1)",
+                  color: "var(--tx)",
+                  fontFamily: "var(--mono)",
+                }}
+              />
+            </div>
+            {/* Add task button */}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 h-[40px] px-3 rounded-lg text-xs font-semibold transition-all shrink-0 md:h-[34px]"
               style={{
-                background: "var(--s2)",
-                border: "1px solid var(--b1)",
-                color: "var(--tx)",
-                fontFamily: "var(--mono)",
+                background: "var(--blue-d)",
+                border: "1px solid var(--blue-b)",
+                color: "var(--blue)",
+                cursor: "pointer",
               }}
-            />
+              title="Nueva tarea manual"
+            >
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <span className="hidden sm:inline">Nueva tarea</span>
+              <span className="sm:hidden">Nueva</span>
+            </button>
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-1">
+          {/* Row 2: filter tabs — scrollable on mobile */}
+          <div className="flex gap-1 overflow-x-auto pb-0.5 md:pb-0 md:flex-nowrap" style={{ scrollbarWidth: "none" }}>
             {FILTER_LABELS.map(({ id, label }) => (
               <button key={id} onClick={() => setFilter(id)}
-                className="px-3 h-[34px] rounded-lg text-xs transition-all"
+                className="px-3 h-[36px] rounded-lg text-xs transition-all shrink-0 md:h-[34px]"
                 style={{
                   fontFamily: "var(--mono)",
                   background: filter === id ? "var(--blue-d)" : "transparent",
@@ -322,24 +355,6 @@ export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[
               </button>
             ))}
           </div>
-
-          {/* Add task button */}
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 h-[34px] px-3 rounded-lg text-xs font-semibold transition-all ml-auto"
-            style={{
-              background: "var(--blue-d)",
-              border: "1px solid var(--blue-b)",
-              color: "var(--blue)",
-              cursor: "pointer",
-            }}
-            title="Nueva tarea manual"
-          >
-            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-              <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            Nueva tarea
-          </button>
         </div>
 
 
@@ -360,7 +375,7 @@ export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[
               </span>
               <div className="flex-1 h-px" style={{ background: "var(--b1)" }} />
             </div>
-            <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(268px, 1fr))" }}>
+            <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(268px, 100%), 1fr))" }}>
               {sts.map((t) => <TaskCard key={t.id} task={t} onOpen={setDetailTask} />)}
             </div>
           </div>

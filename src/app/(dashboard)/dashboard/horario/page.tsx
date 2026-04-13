@@ -218,7 +218,7 @@ export default async function HorarioPage() {
                           const isActive = activeClass?.id === cls.id
                           return (
                             <div key={i} className="flex items-start gap-3 px-4 py-3"
-                              style={{ background: isActive ? "color-mix(in srgb, var(--green-d) 40%, transparent)" : undefined }}>
+                              style={{ background: isActive ? "rgba(34,197,94,0.08)" : undefined }}>
                               <div className="flex flex-col items-center shrink-0 pt-0.5" style={{ minWidth: 52 }}>
                                 <span className="text-[12px] font-semibold" style={{ fontFamily: "var(--mono)", color: "var(--tx)" }}>
                                   {cls.startTime}

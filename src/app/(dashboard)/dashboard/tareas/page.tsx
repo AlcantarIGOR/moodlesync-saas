@@ -66,7 +66,7 @@ export default async function TareasPage({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">
         <TaskList tasks={tasks} moodleBaseUrl={process.env.MOODLE_BASE_URL} initialFilter={filter} />
       </div>
     </div>

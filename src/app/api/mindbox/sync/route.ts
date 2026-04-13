@@ -20,7 +20,9 @@ export async function POST() {
     )
   }
 
-  const ncontrol = user.moodleUsername.replace(/^[a-zA-Z]+/, "")
+  // Extract numeric control number — strip any leading career prefix (e.g. "l21" → "21", "20130789" stays)
+  const ncontrolRaw = user.moodleUsername.replace(/^[a-zA-Z]+/i, "").trim()
+  const ncontrol = ncontrolRaw.length >= 5 ? ncontrolRaw : user.moodleUsername
   const plainPassword = decryptPassword(user.mindboxPassword)
 
   try {

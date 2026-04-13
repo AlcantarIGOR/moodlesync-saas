@@ -13,6 +13,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await auth()
   if (!session) redirect("/login")
 
+  // Track last seen (fire-and-forget — no await so it doesn't slow the layout)
+  void db.user.update({ where: { id: session.user.id }, data: { lastSeenAt: new Date() } }).catch(() => {})
+
   // Badges
   const tasks = await db.task.findMany({ where: { userId: session.user.id }, select: { status: true, dueDate: true } })
   const now = Date.now()
@@ -95,12 +98,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
     },
   ]
 
+  const isAdmin = session.user.id === process.env.ADMIN_USER_ID
+
   const systemItems = [
     {
       href: "/dashboard/settings",
       label: "Configuración",
       icon: <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
     },
+    ...(isAdmin ? [{
+      href: "/dashboard/admin",
+      label: "Admin",
+      icon: <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 13c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><circle cx="13" cy="4" r="1.5" fill="currentColor"/><path d="M13 2v.5M13 5.5V6M11.2 2.8l.35.35M14.45 6.05l.35.35M10.5 4H11M15 4h.5M11.2 5.2l.35-.35M14.45 1.95l.35-.35" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>,
+    }] : []),
   ]
 
   return (
@@ -171,15 +181,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       {/* ── MAIN ── */}
       <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-
-        {/* Mobile header */}
-        <header className="md:hidden flex items-center h-[54px] px-4 gap-3 shrink-0"
-          style={{ borderBottom: "1px solid var(--b1)", background: "rgba(10,10,11,.9)", backdropFilter: "blur(10px)" }}>
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--blue)" }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2.5" fill="white"/><circle cx="7" cy="7" r="5.5" stroke="white" strokeWidth="1.3"/></svg>
-          </div>
-          <span className="text-sm font-bold" style={{ color: "var(--tx)" }}>MoodleSync</span>
-        </header>
 
         <main className="flex-1 overflow-y-auto">{children}</main>
 
