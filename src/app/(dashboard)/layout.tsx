@@ -19,11 +19,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Badges
   const tasks = await db.task.findMany({ where: { userId: session.user.id }, select: { status: true, dueDate: true } })
   const now = Date.now()
-  const pending  = tasks.filter((t) => t.status === "PENDING" && t.dueDate && new Date(t.dueDate).getTime() >= now + 3 * 86400000).length
-  const urgent   = tasks.filter((t) => t.status === "PENDING" && t.dueDate && new Date(t.dueDate).getTime() < now + 3 * 86400000 && new Date(t.dueDate).getTime() >= now).length
-  const overdue  = tasks.filter((t) => t.status === "PENDING" && t.dueDate && new Date(t.dueDate).getTime() < now).length
-  const done     = tasks.filter((t) => t.status === "DONE").length
-  const total    = tasks.filter((t) => t.status !== "ARCHIVED").length
+  // Urgentes: vence en los próximos 7 días (aún no pasado)
+  const urgent  = tasks.filter((t) => t.status === "PENDING" && t.dueDate && new Date(t.dueDate).getTime() > now && new Date(t.dueDate).getTime() <= now + 7 * 86400000).length
+  // Pendientes: ya pasó la fecha, max 10 días atrás
+  const overdue = tasks.filter((t) => t.status === "PENDING" && t.dueDate && new Date(t.dueDate).getTime() < now && (now - new Date(t.dueDate).getTime()) <= 10 * 86400000).length
+  const done    = tasks.filter((t) => t.status === "DONE").length
+  const total   = tasks.filter((t) => t.status !== "ARCHIVED").length
   const archived = tasks.filter((t) => t.status === "ARCHIVED").length
 
   const initials = session.user.name?.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() ?? "U"
@@ -47,13 +48,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     {
       href: "/dashboard/tareas?filter=urgentes",
       label: "Urgentes",
-      badge: urgent + overdue,
+      badge: urgent,
       icon: <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L2 13h12L8 2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M8 6v3.5M8 11v.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
     },
     {
       href: "/dashboard/tareas?filter=pendientes",
       label: "Pendientes",
-      badge: pending,
+      badge: overdue,
       icon: <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
     },
     {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import type { Task } from "@prisma/client"
 import { AddTaskModal } from "@/components/dashboard/add-task-modal"
 import { TaskDetailModal } from "@/components/dashboard/task-detail-modal"
@@ -23,15 +23,21 @@ function timeAgo(date: Date | null): string {
   return `hace ${diff}d`
 }
 
+// Estado visual de una tarea según la nueva lógica:
+// - urgente:   vence en los próximos 7 días (aún no pasado)
+// - vencida:   ya pasó la fecha, max 10 días atrás (mostrada en filtro "Pendientes")
+// - pendiente: vence en > 7 días o sin fecha
+// - completada: DONE
+// Las tareas con > 10 días vencidas son auto-archivadas antes de llegar aquí
 function taskStatus(task: Task): "completada" | "vencida" | "urgente" | "pendiente" {
   if (task.status === "DONE") return "completada"
   if (task.status === "ARCHIVED") return "pendiente"
   if (!task.dueDate) return "pendiente"
   const now = Date.now()
   const due = new Date(task.dueDate).getTime()
-  if (due < now) return "vencida"
-  if (due - now < 3 * 86400000) return "urgente"
-  return "pendiente"
+  if (due < now) return "vencida"                    // ya pasó → tab Pendientes
+  if (due - now <= 7 * 86400000) return "urgente"    // ≤ 7 días → tab Urgentes
+  return "pendiente"                                  // > 7 días → solo en Todas
 }
 
 const STATUS_STYLE: Record<string, { label: string; bg: string; color: string; border: string }> = {
@@ -143,7 +149,6 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          {/* Delete button — only on manual tasks; always visible for accessibility */}
           {task.isManual && (
             <button
               onClick={handleDelete}
@@ -163,26 +168,18 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
               )}
             </button>
           )}
-          {/* Toggle checkbox — min 44px touch target via padding wrapper */}
+          {/* Toggle checkbox — 44px tap target */}
           <button
             onClick={toggle}
             disabled={toggleLoading}
             className="flex items-center justify-center shrink-0 transition-all"
-            style={{
-              width: 44,
-              height: 44,
-              margin: "-10px -10px -10px 0",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-            }}
+            style={{ width: 44, height: 44, margin: "-10px -10px -10px 0", background: "transparent", border: "none", cursor: "pointer" }}
             title={done ? "Marcar como pendiente" : "Marcar como completada"}
           >
             <span
               className="flex items-center justify-center rounded-md transition-all"
               style={{
-                width: 22,
-                height: 22,
+                width: 22, height: 22,
                 border: done ? "none" : "1.5px solid var(--b2)",
                 background: done ? "var(--green)" : "transparent",
                 flexShrink: 0,
@@ -204,7 +201,6 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
         {task.title}
       </p>
 
-      {/* Course full name as desc */}
       {task.courseName && (
         <p className="text-[11px] leading-relaxed mb-3 line-clamp-2" style={{ color: "var(--tx2)" }}>
           {task.courseName}
@@ -213,12 +209,10 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
 
       {/* Footer: status badge + date */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[.04em]"
-            style={{ fontFamily: "var(--mono)", background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
-            {st.label}
-          </span>
-        </div>
+        <span className="rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[.04em]"
+          style={{ fontFamily: "var(--mono)", background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
+          {st.label}
+        </span>
         <div className="flex items-center gap-1 text-[10px] shrink-0"
           style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
@@ -229,7 +223,6 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
         </div>
       </div>
 
-      {/* Progress bar */}
       {progressPct !== null && (
         <div className="mt-3 rounded-full overflow-hidden" style={{ height: 3, background: "var(--s3)" }}>
           <div style={{ width: `${progressPct}%`, height: "100%", background: progressColor!, borderRadius: 9999, transition: "width .3s ease" }} />
@@ -240,31 +233,47 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
 }
 
 const FILTER_LABELS: { id: Filter; label: string }[] = [
-  { id: "todas",      label: "Todas" },
-  { id: "pendientes", label: "Pendientes" },
-  { id: "urgentes",   label: "Urgentes" },
-  { id: "completadas",label: "Completadas" },
+  { id: "todas",       label: "Todas" },
+  { id: "urgentes",    label: "Urgentes" },
+  { id: "pendientes",  label: "Pendientes" },
+  { id: "completadas", label: "Completadas" },
 ]
 
-function toFilter(raw: string | undefined): Filter {
-  if (raw === "pendientes" || raw === "urgentes" || raw === "completadas" || raw === "archivadas") return raw
+function toFilter(raw: string | null | undefined): Filter {
+  if (raw === "urgentes" || raw === "pendientes" || raw === "completadas" || raw === "archivadas") return raw
   return "todas"
 }
 
-export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[]; moodleBaseUrl?: string; initialFilter?: string }) {
-  const [filter, setFilter] = useState<Filter>(() => toFilter(initialFilter))
+export function TaskList({ tasks, moodleBaseUrl }: { tasks: Task[]; moodleBaseUrl?: string }) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Filter is always derived from the URL — sidebar links and tab buttons both set the URL
+  const filter = toFilter(searchParams.get("filter"))
   const [search, setSearch] = useState("")
   const [showAddModal, setShowAddModal] = useState(false)
   const [detailTask, setDetailTask] = useState<Task | null>(null)
 
+  function handleSetFilter(newFilter: Filter) {
+    const params = new URLSearchParams(searchParams.toString())
+    if (newFilter === "todas") {
+      params.delete("filter")
+    } else {
+      params.set("filter", newFilter)
+    }
+    const qs = params.toString()
+    router.push(pathname + (qs ? `?${qs}` : ""))
+  }
+
   const filtered = tasks.filter((t) => {
     const s = taskStatus(t)
     const matchFilter =
-      filter === "archivadas" ? t.status === "ARCHIVED" :
-      filter === "todas" ? t.status !== "ARCHIVED" :
-      filter === "pendientes" ? s === "pendiente" && t.status !== "ARCHIVED" :
-      filter === "urgentes" ? (s === "urgente" || s === "vencida") && t.status !== "ARCHIVED" :
-      s === "completada"
+      filter === "archivadas"  ? t.status === "ARCHIVED" :
+      filter === "todas"       ? t.status !== "ARCHIVED" :
+      filter === "urgentes"    ? s === "urgente"   && t.status !== "ARCHIVED" :
+      filter === "pendientes"  ? s === "vencida"   && t.status !== "ARCHIVED" :
+      /* completadas */          s === "completada"
     const matchSearch = search === "" ||
       t.title.toLowerCase().includes(search.toLowerCase()) ||
       (t.courseName ?? "").toLowerCase().includes(search.toLowerCase())
@@ -285,21 +294,15 @@ export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[
 
   return (
     <>
-      {showAddModal && (
-        <AddTaskModal onClose={() => setShowAddModal(false)} />
-      )}
+      {showAddModal && <AddTaskModal onClose={() => setShowAddModal(false)} />}
       {detailTask && (
-        <TaskDetailModal
-          task={detailTask}
-          moodleBaseUrl={moodleBaseUrl}
-          onClose={() => setDetailTask(null)}
-        />
+        <TaskDetailModal task={detailTask} moodleBaseUrl={moodleBaseUrl} onClose={() => setDetailTask(null)} />
       )}
 
       <div>
-        {/* Search + filter + add bar — 2 rows on mobile, 1 row on desktop */}
+        {/* Search + filter + add bar */}
         <div className="flex flex-col gap-2 mb-5 md:flex-row md:items-center md:gap-3">
-          {/* Row 1: search + add button */}
+          {/* Row 1: search + add */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ color: "var(--tx2)" }}>
@@ -311,24 +314,13 @@ export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar tarea..."
                 className="w-full h-[40px] rounded-lg pl-8 pr-3 text-xs outline-none md:h-[34px] md:max-w-xs"
-                style={{
-                  background: "var(--s2)",
-                  border: "1px solid var(--b1)",
-                  color: "var(--tx)",
-                  fontFamily: "var(--mono)",
-                }}
+                style={{ background: "var(--s2)", border: "1px solid var(--b1)", color: "var(--tx)", fontFamily: "var(--mono)" }}
               />
             </div>
-            {/* Add task button */}
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-1.5 h-[40px] px-3 rounded-lg text-xs font-semibold transition-all shrink-0 md:h-[34px]"
-              style={{
-                background: "var(--blue-d)",
-                border: "1px solid var(--blue-b)",
-                color: "var(--blue)",
-                cursor: "pointer",
-              }}
+              style={{ background: "var(--blue-d)", border: "1px solid var(--blue-b)", color: "var(--blue)", cursor: "pointer" }}
               title="Nueva tarea manual"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
@@ -339,10 +331,10 @@ export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[
             </button>
           </div>
 
-          {/* Row 2: filter tabs — scrollable on mobile */}
+          {/* Row 2: filter tabs */}
           <div className="flex gap-1 overflow-x-auto pb-0.5 md:pb-0 md:flex-nowrap" style={{ scrollbarWidth: "none" }}>
             {FILTER_LABELS.map(({ id, label }) => (
-              <button key={id} onClick={() => setFilter(id)}
+              <button key={id} onClick={() => handleSetFilter(id)}
                 className="px-3 h-[36px] rounded-lg text-xs transition-all shrink-0 md:h-[34px]"
                 style={{
                   fontFamily: "var(--mono)",
@@ -357,7 +349,6 @@ export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[
           </div>
         </div>
 
-
         {/* Sections */}
         {sections.length === 0 ? (
           <div className="text-center py-12 text-xs" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
@@ -366,8 +357,7 @@ export function TaskList({ tasks, moodleBaseUrl, initialFilter }: { tasks: Task[
         ) : sections.map(({ label, tasks: sts, color }) => (
           <div key={label} className="mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] uppercase tracking-[.1em]"
-                style={{ fontFamily: "var(--mono)", color }}>
+              <span className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color }}>
                 {label}
               </span>
               <span className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>

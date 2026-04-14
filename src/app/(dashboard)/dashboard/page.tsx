@@ -15,13 +15,18 @@ function timeLeft(date: Date | null): string {
   return `${diff}d restantes`
 }
 
+// Vencida: pasó la fecha, max 10 días atrás (después se auto-archiva)
 function isOverdue(date: Date | null) {
-  return date && new Date(date).getTime() < Date.now()
+  if (!date) return false
+  const due = new Date(date).getTime()
+  const now = Date.now()
+  return due < now && (now - due) <= 10 * 86400000
 }
+// Urgente: vence en los próximos 7 días (aún no pasado)
 function isUrgent(date: Date | null) {
   if (!date) return false
   const t = new Date(date).getTime()
-  return t >= Date.now() && t < Date.now() + 3 * 86400000
+  return t >= Date.now() && t < Date.now() + 7 * 86400000
 }
 
 export default async function DashboardPage({
@@ -34,6 +39,12 @@ export default async function DashboardPage({
 
   const { sem } = await searchParams
   const semNum = sem ? parseInt(sem) : 0
+
+  // Auto-archive PENDING tasks overdue by more than 10 days (fire-and-forget)
+  void db.task.updateMany({
+    where: { userId: session.user.id, status: "PENDING", dueDate: { lt: new Date(Date.now() - 10 * 86400000) } },
+    data: { status: "ARCHIVED" },
+  }).catch(() => {})
 
   // Auto-sync on first visit
   let allTasks = await db.task.findMany({
@@ -112,6 +123,10 @@ export default async function DashboardPage({
     }
     return null
   })()
+
+  // Vista dual: si quedan ≤15 min para terminar la clase actual Y hay siguiente clase
+  const minsUntilClassEnd = activeClass ? toMins(activeClass.endTime) - nowMins : Infinity
+  const showDual = !!(activeClass && nextClass && minsUntilClassEnd <= 15)
 
   return (
     <div className="flex flex-col h-full">
@@ -197,30 +212,82 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        {/* ── CLASE AHORA ── */}
+        {/* ── CLASE AHORA ── vista dual cuando quedan ≤15 min */}
         {(activeClass || nextClass) && (
-          <Link href="/dashboard/horario" style={{ textDecoration: "none" }}>
-            <div className="rounded-2xl p-4 flex items-center gap-3 transition-all hover:opacity-90"
-              style={{ background: "var(--card)", border: `1px solid ${activeClass ? "var(--green-b)" : "var(--b1)"}` }}>
-              <div className={`w-2 h-2 rounded-full shrink-0 ${activeClass ? "" : ""}`}
-                style={{ background: activeClass ? "var(--green)" : "var(--amber)", boxShadow: activeClass ? "0 0 6px var(--green)" : "none" }} />
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-[.08em]" style={{ fontFamily: "var(--mono)", color: activeClass ? "var(--green)" : "var(--amber)" }}>
-                  {activeClass ? "Ahora en clase" : "Próxima clase"}
-                </p>
-                <p className="text-[13px] font-semibold truncate" style={{ color: "var(--tx)" }}>
-                  {(activeClass ?? nextClass)!.subjectName}
-                </p>
-                <p className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-                  {(activeClass ?? nextClass)!.startTime}–{(activeClass ?? nextClass)!.endTime}
-                  {(activeClass ?? nextClass)!.room ? ` · Aula ${(activeClass ?? nextClass)!.room}` : ""}
-                </p>
+          showDual ? (
+            /* Vista dual: clase actual + próxima clase */
+            <Link href="/dashboard/horario" style={{ textDecoration: "none" }}>
+              <div className="rounded-2xl overflow-hidden transition-all hover:opacity-90"
+                style={{ background: "var(--card)", border: "1px solid var(--green-b)" }}>
+
+                {/* Clase actual */}
+                <div className="flex items-center gap-3 px-4 py-3"
+                  style={{ borderBottom: "1px solid var(--b1)" }}>
+                  <div className="w-2 h-2 rounded-full shrink-0"
+                    style={{ background: "var(--green)", boxShadow: "0 0 6px var(--green)" }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] uppercase tracking-[.08em]"
+                      style={{ fontFamily: "var(--mono)", color: "var(--green)" }}>
+                      Ahora en clase · termina en {minsUntilClassEnd}min
+                    </p>
+                    <p className="text-[13px] font-semibold truncate" style={{ color: "var(--tx)" }}>
+                      {activeClass!.subjectName}
+                    </p>
+                    <p className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
+                      {activeClass!.startTime}–{activeClass!.endTime}
+                      {activeClass!.room ? ` · Aula ${activeClass!.room}` : ""}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Próxima clase */}
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "var(--amber)" }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] uppercase tracking-[.08em]"
+                      style={{ fontFamily: "var(--mono)", color: "var(--amber)" }}>
+                      Próxima · en {toMins(nextClass!.startTime) - nowMins}min
+                    </p>
+                    <p className="text-[13px] font-semibold truncate" style={{ color: "var(--tx)" }}>
+                      {nextClass!.subjectName}
+                    </p>
+                    <p className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
+                      {nextClass!.startTime}–{nextClass!.endTime}
+                      {nextClass!.room ? ` · Aula ${nextClass!.room}` : ""}
+                    </p>
+                  </div>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0" style={{ color: "var(--tx3)" }}>
+                    <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
               </div>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0" style={{ color: "var(--tx3)" }}>
-                <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-          </Link>
+            </Link>
+          ) : (
+            /* Vista simple: solo clase actual o próxima */
+            <Link href="/dashboard/horario" style={{ textDecoration: "none" }}>
+              <div className="rounded-2xl p-4 flex items-center gap-3 transition-all hover:opacity-90"
+                style={{ background: "var(--card)", border: `1px solid ${activeClass ? "var(--green-b)" : "var(--b1)"}` }}>
+                <div className="w-2 h-2 rounded-full shrink-0"
+                  style={{ background: activeClass ? "var(--green)" : "var(--amber)", boxShadow: activeClass ? "0 0 6px var(--green)" : "none" }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] uppercase tracking-[.08em]"
+                    style={{ fontFamily: "var(--mono)", color: activeClass ? "var(--green)" : "var(--amber)" }}>
+                    {activeClass ? "Ahora en clase" : "Próxima clase"}
+                  </p>
+                  <p className="text-[13px] font-semibold truncate" style={{ color: "var(--tx)" }}>
+                    {(activeClass ?? nextClass)!.subjectName}
+                  </p>
+                  <p className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
+                    {(activeClass ?? nextClass)!.startTime}–{(activeClass ?? nextClass)!.endTime}
+                    {(activeClass ?? nextClass)!.room ? ` · Aula ${(activeClass ?? nextClass)!.room}` : ""}
+                  </p>
+                </div>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0" style={{ color: "var(--tx3)" }}>
+                  <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </Link>
+          )
         )}
 
         {/* ── PRÓXIMAS A VENCER ── */}

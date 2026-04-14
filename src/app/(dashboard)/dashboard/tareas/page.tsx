@@ -8,13 +8,23 @@ import { TaskList } from "@/components/dashboard/task-list"
 export default async function TareasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sem?: string; filter?: string }>
+  searchParams: Promise<{ sem?: string }>
 }) {
   const session = await auth()
   if (!session?.user?.id) redirect("/login")
 
-  const { sem, filter } = await searchParams
+  const { sem } = await searchParams
   const semNum = sem ? parseInt(sem) : 0
+
+  // Auto-archive PENDING tasks overdue by more than 10 days (fire-and-forget)
+  void db.task.updateMany({
+    where: {
+      userId: session.user.id,
+      status: "PENDING",
+      dueDate: { lt: new Date(Date.now() - 10 * 86400000) },
+    },
+    data: { status: "ARCHIVED" },
+  }).catch(() => {})
 
   // Auto-sync on first load (when user has no tasks yet)
   let tasks = await db.task.findMany({
@@ -67,7 +77,7 @@ export default async function TareasPage({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
-        <TaskList tasks={tasks} moodleBaseUrl={process.env.MOODLE_BASE_URL} initialFilter={filter} />
+        <TaskList tasks={tasks} moodleBaseUrl={process.env.MOODLE_BASE_URL} />
       </div>
     </div>
   )
