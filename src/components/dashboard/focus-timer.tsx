@@ -73,10 +73,10 @@ export function FocusTimer() {
 
   // Fetch pending tasks for selector
   useEffect(() => {
-    fetch("/api/tasks?q=")
+    fetch("/api/tasks?status=PENDING")
       .then((r) => r.json())
       .then((data: TaskOption[]) => {
-        setTasks(data.filter((t) => t.status === "PENDING"))
+        setTasks(Array.isArray(data) ? data : [])
         setLoadingTasks(false)
       })
       .catch(() => setLoadingTasks(false))

@@ -8,12 +8,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
   const { searchParams } = new URL(req.url)
-  const q = searchParams.get("q")?.toLowerCase().trim() ?? ""
+  const q      = searchParams.get("q")?.toLowerCase().trim() ?? ""
+  const status = searchParams.get("status")?.toUpperCase()   // e.g. "PENDING"
 
   const tasks = await db.task.findMany({
     where: {
       userId: session.user.id,
-      status: { not: "ARCHIVED" },
+      // Si se pide un status específico úsalo; si no, excluye ARCHIVED
+      ...(status ? { status: status as "PENDING" | "DONE" | "ARCHIVED" } : { status: { not: "ARCHIVED" } }),
       ...(q ? {
         OR: [
           { title: { contains: q, mode: "insensitive" } },
@@ -23,7 +25,8 @@ export async function GET(req: Request) {
     },
     select: { id: true, title: true, courseName: true, dueDate: true, status: true },
     orderBy: { dueDate: "asc" },
-    take: 8,
+    // Límite solo para búsquedas rápidas (command palette); sin q y con status específico devuelve todo
+    ...(q ? { take: 8 } : {}),
   })
 
   return NextResponse.json(tasks)
