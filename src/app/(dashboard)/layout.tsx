@@ -21,8 +21,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const now = Date.now()
   // Urgentes: vence en los próximos 7 días (aún no pasado)
   const urgent  = tasks.filter((t) => t.status === "PENDING" && t.dueDate && new Date(t.dueDate).getTime() > now && new Date(t.dueDate).getTime() <= now + 7 * 86400000).length
-  // Pendientes: ya pasó la fecha, max 10 días atrás
-  const overdue = tasks.filter((t) => t.status === "PENDING" && t.dueDate && new Date(t.dueDate).getTime() < now && (now - new Date(t.dueDate).getTime()) <= 10 * 86400000).length
+  // Pendientes: vence en > 7 días (futuro, más allá de la ventana urgente) o sin fecha
+  const pending = tasks.filter((t) => t.status === "PENDING" && (!t.dueDate || new Date(t.dueDate).getTime() > now + 7 * 86400000)).length
   const done    = tasks.filter((t) => t.status === "DONE").length
   const total   = tasks.filter((t) => t.status !== "ARCHIVED").length
   const archived = tasks.filter((t) => t.status === "ARCHIVED").length
@@ -54,7 +54,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     {
       href: "/dashboard/tareas?filter=pendientes",
       label: "Pendientes",
-      badge: overdue,
+      badge: pending,
       icon: <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
     },
     {

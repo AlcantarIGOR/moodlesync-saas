@@ -272,7 +272,7 @@ export function TaskList({ tasks, moodleBaseUrl }: { tasks: Task[]; moodleBaseUr
       filter === "archivadas"  ? t.status === "ARCHIVED" :
       filter === "todas"       ? t.status !== "ARCHIVED" :
       filter === "urgentes"    ? s === "urgente"   && t.status !== "ARCHIVED" :
-      filter === "pendientes"  ? s === "vencida"   && t.status !== "ARCHIVED" :
+      filter === "pendientes"  ? s === "pendiente" && t.status !== "ARCHIVED" :
       /* completadas */          s === "completada"
     const matchSearch = search === "" ||
       t.title.toLowerCase().includes(search.toLowerCase()) ||
