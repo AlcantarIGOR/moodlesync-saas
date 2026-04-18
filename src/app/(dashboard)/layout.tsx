@@ -95,6 +95,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       icon: <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="9" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M11 4l2 2-5 5-2.5.5.5-2.5L11 4z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><path d="M5 6h4M5 9h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
     },
     {
+      href: "/dashboard/grupos",
+      label: "Grupos",
+      icon: <svg viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.3"/><circle cx="11" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.3"/><path d="M1 13c0-2.5 2.2-4 5-4M10 9c2.8 0 5 1.5 5 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M6 9c2.8 0 5 1.5 5 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+    },
+    {
       href: "/dashboard/calificaciones",
       label: "Calificaciones",
       icon: <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.3"/><path d="M4 5h8M4 8h6M4 11h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,

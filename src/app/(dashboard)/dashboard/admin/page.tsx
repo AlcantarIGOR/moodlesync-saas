@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
+import { AdminUserTable } from "@/components/dashboard/admin-user-table"
 
 export default async function AdminPage() {
   const session = await auth()
@@ -24,6 +25,7 @@ export default async function AdminPage() {
           grades: true,
           schedule: true,
           pushSubs: true,
+          notes: true,
         },
       },
     },
@@ -42,12 +44,47 @@ export default async function AdminPage() {
     return date.toLocaleDateString("es-MX", { day: "2-digit", month: "short" })
   }
 
-  const totalUsers = users.length
+  type Status = "nuevo" | "activo" | "inactivo" | "dormido"
+  function userStatus(u: (typeof users)[0]): Status {
+    const age  = now.getTime() - u.createdAt.getTime()
+    const seen = u.lastSeenAt ? now.getTime() - u.lastSeenAt.getTime() : Infinity
+    if (age  <  7 * DAY) return "nuevo"
+    if (seen <  3 * DAY) return "activo"
+    if (seen < 30 * DAY) return "inactivo"
+    return "dormido"
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  const totalUsers  = users.length
   const activeToday = users.filter((u) => u.lastSeenAt && now.getTime() - u.lastSeenAt.getTime() < DAY).length
   const activeWeek  = users.filter((u) => u.lastSeenAt && now.getTime() - u.lastSeenAt.getTime() < 7 * DAY).length
   const withMindbox = users.filter((u) => !!u.mindboxPassword).length
-  const withEmail   = users.filter((u) => !!u.email).length
   const withPush    = users.filter((u) => u._count.pushSubs > 0).length
+  const sinSync     = users.filter((u) => u._count.tasks === 0 && u._count.grades === 0 && u._count.schedule === 0).length
+  const dauWau      = activeWeek > 0 ? Math.round((activeToday / activeWeek) * 100) : 0
+
+  // ── Segmentación ──────────────────────────────────────────────────────────
+  const segCount: Record<Status, number> = { nuevo: 0, activo: 0, inactivo: 0, dormido: 0 }
+  users.forEach((u) => segCount[userStatus(u)]++)
+
+  const segConfig: Record<Status, { label: string; sub: string; color: string; bg: string; border: string }> = {
+    nuevo:    { label: "Nuevos",    sub: "< 7 días",  color: "var(--blue)",  bg: "var(--blue-d)",  border: "var(--blue-b)"  },
+    activo:   { label: "Activos",   sub: "visto < 3d", color: "var(--green)", bg: "var(--green-d)", border: "var(--green-b)" },
+    inactivo: { label: "Inactivos", sub: "7 – 30 d",  color: "var(--amber)", bg: "var(--amber-d)", border: "var(--amber-b)" },
+    dormido:  { label: "Dormidos",  sub: "> 30 días", color: "var(--tx3)",   bg: "var(--s3)",      border: "var(--b1)"      },
+  }
+
+  // ── Sparkline (14 días) ───────────────────────────────────────────────────
+  const SPARK = 14
+  const sparkData: number[] = Array(SPARK).fill(0)
+  users.forEach((u) => {
+    const daysAgo = Math.floor((now.getTime() - u.createdAt.getTime()) / DAY)
+    if (daysAgo < SPARK) sparkData[SPARK - 1 - daysAgo]++
+  })
+  const sparkMax    = Math.max(...sparkData, 1)
+  const sparkTotal  = sparkData.reduce((a, b) => a + b, 0)
+  const sparkPrev   = sparkData.slice(0, 7).reduce((a, b) => a + b, 0)
+  const sparkRecent = sparkData.slice(7).reduce((a, b) => a + b, 0)
 
   return (
     <div className="flex flex-col h-full">
@@ -69,139 +106,137 @@ export default async function AdminPage() {
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         <div className="max-w-5xl mx-auto space-y-4">
 
-          {/* Stats row */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {/* ── Stats row ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Total",         value: totalUsers,  color: "var(--tx)"   },
-              { label: "Hoy activos",   value: activeToday, color: "var(--green)" },
-              { label: "Esta semana",   value: activeWeek,  color: "var(--blue)"  },
-              { label: "Con Mindbox",   value: withMindbox, color: "var(--amber)" },
-              { label: "Notif. email",  value: withEmail,   color: "var(--tx2)"  },
+              { label: "Total",        value: totalUsers,             sub: "registrados",         color: "var(--tx)"    },
+              { label: "DAU",          value: activeToday,            sub: "activos hoy",          color: "var(--green)" },
+              { label: "WAU",          value: activeWeek,             sub: "activos esta semana",  color: "var(--blue)"  },
+              { label: "DAU / WAU",    value: `${dauWau}%`,           sub: "retención diaria",     color: dauWau >= 40 ? "var(--green)" : dauWau >= 20 ? "var(--amber)" : "var(--red)" },
             ].map((s) => (
               <div key={s.label} className="rounded-xl p-3 text-center"
                 style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
+                <p className="text-[9px] uppercase tracking-[.1em] mb-1" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>{s.label}</p>
                 <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
-                <p className="text-[10px] mt-0.5" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>{s.label}</p>
+                <p className="text-[10px] mt-0.5" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>{s.sub}</p>
               </div>
             ))}
           </div>
 
-          {/* Users table */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
-            <div className="px-4 py-3 flex items-center justify-between"
-              style={{ borderBottom: "1px solid var(--b1)", background: "var(--s2)" }}>
-              <p className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-                Usuarios registrados
+          {/* ── Segunda fila stats ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: "Sin sincronizar", value: sinSync,     sub: "nunca usaron sync",   color: sinSync > 0 ? "var(--amber)" : "var(--tx3)" },
+              { label: "Con Mindbox",     value: withMindbox, sub: "credenciales activas", color: "var(--tx2)"  },
+              { label: "Con Push",        value: withPush,    sub: "notificaciones",       color: "var(--blue)"  },
+              { label: "Tasa adopción",   value: `${totalUsers > 0 ? Math.round(((totalUsers - sinSync) / totalUsers) * 100) : 0}%`,
+                sub: "sync activado",   color: "var(--green)" },
+            ].map((s) => (
+              <div key={s.label} className="rounded-xl p-3 text-center"
+                style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
+                <p className="text-[9px] uppercase tracking-[.1em] mb-1" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>{s.label}</p>
+                <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+                <p className="text-[10px] mt-0.5" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>{s.sub}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Segmentación + Sparkline ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+            {/* Segmentación */}
+            <div className="rounded-2xl p-4" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
+              <p className="text-[10px] uppercase tracking-[.1em] mb-3" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>
+                Segmentación de usuarios
               </p>
-              <span className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>
-                push: {withPush}
-              </span>
-            </div>
-
-            {/* Table header */}
-            <div className="hidden md:grid px-4 py-2 text-[10px] uppercase tracking-[.07em]"
-              style={{
-                gridTemplateColumns: "1fr 100px 60px 60px 60px 55px 70px 70px",
-                fontFamily: "var(--mono)", color: "var(--tx3)",
-                borderBottom: "1px solid var(--b1)", background: "var(--s2)"
-              }}>
-              <span>Nombre</span>
-              <span>N° Control</span>
-              <span className="text-center">Tareas</span>
-              <span className="text-center">Califs</span>
-              <span className="text-center">Clases</span>
-              <span className="text-center">Mindbox</span>
-              <span className="text-right">Registro</span>
-              <span className="text-right">Visto</span>
-            </div>
-
-            <div className="divide-y" style={{ borderColor: "var(--b1)" }}>
-              {users.map((u) => {
-                const seenRecently = u.lastSeenAt && now.getTime() - u.lastSeenAt.getTime() < DAY
-                return (
-                  <div key={u.id}
-                    className="hidden md:grid px-4 py-3 items-center text-[12px]"
-                    style={{ gridTemplateColumns: "1fr 100px 60px 60px 60px 55px 70px 70px" }}>
-
-                    {/* Name */}
-                    <div className="min-w-0 pr-3">
-                      <p className="font-medium truncate" style={{ color: "var(--tx)" }}>{u.name}</p>
-                      {u.email && (
-                        <p className="text-[10px] truncate" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>{u.email}</p>
-                      )}
-                    </div>
-
-                    {/* ncontrol */}
-                    <span style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>{u.moodleUsername}</span>
-
-                    {/* Tasks */}
-                    <span className="text-center" style={{ color: u._count.tasks > 0 ? "var(--tx)" : "var(--tx3)" }}>
-                      {u._count.tasks}
-                    </span>
-
-                    {/* Grades */}
-                    <span className="text-center" style={{ color: u._count.grades > 0 ? "var(--tx)" : "var(--tx3)" }}>
-                      {u._count.grades}
-                    </span>
-
-                    {/* Schedule */}
-                    <span className="text-center" style={{ color: u._count.schedule > 0 ? "var(--tx)" : "var(--tx3)" }}>
-                      {u._count.schedule}
-                    </span>
-
-                    {/* Mindbox */}
-                    <span className="text-center">
-                      <span className="text-[9px] rounded px-1.5 py-0.5 font-semibold"
-                        style={{
-                          fontFamily: "var(--mono)",
-                          background: u.mindboxPassword ? "var(--green-d)" : "var(--s3)",
-                          color: u.mindboxPassword ? "var(--green)" : "var(--tx3)",
-                          border: `1px solid ${u.mindboxPassword ? "var(--green-b)" : "var(--b1)"}`,
-                        }}>
-                        {u.mindboxPassword ? "SÍ" : "NO"}
-                      </span>
-                    </span>
-
-                    {/* Registered */}
-                    <span className="text-right" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>
-                      {relativeTime(u.createdAt)}
-                    </span>
-
-                    {/* Last seen */}
-                    <span className="text-right font-semibold"
-                      style={{ fontFamily: "var(--mono)", color: seenRecently ? "var(--green)" : "var(--tx3)" }}>
-                      {relativeTime(u.lastSeenAt)}
-                    </span>
-                  </div>
-                )
-              })}
-
-              {/* Mobile cards */}
-              {users.map((u) => {
-                const seenRecently = u.lastSeenAt && now.getTime() - u.lastSeenAt.getTime() < DAY
-                return (
-                  <div key={u.id + "-mobile"} className="md:hidden px-4 py-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-medium" style={{ color: "var(--tx)" }}>{u.name}</p>
-                        <p className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>{u.moodleUsername}</p>
+              <div className="space-y-3">
+                {(["nuevo", "activo", "inactivo", "dormido"] as Status[]).map((key) => {
+                  const cfg = segConfig[key]
+                  const count = segCount[key]
+                  const pct   = totalUsers > 0 ? (count / totalUsers) * 100 : 0
+                  return (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] rounded px-1.5 py-0.5 font-semibold"
+                            style={{ fontFamily: "var(--mono)", background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+                            {cfg.label.toUpperCase()}
+                          </span>
+                          <span className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>{cfg.sub}</span>
+                        </div>
+                        <span className="text-[12px] font-semibold" style={{ color: cfg.color }}>{count}</span>
                       </div>
-                      <span className="text-[10px] shrink-0" style={{ fontFamily: "var(--mono)", color: seenRecently ? "var(--green)" : "var(--tx3)" }}>
-                        {relativeTime(u.lastSeenAt)}
-                      </span>
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--s3)" }}>
+                        <div className="h-full rounded-full transition-all"
+                          style={{ width: `${pct}%`, background: cfg.color, opacity: 0.85 }} />
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <Chip label={`${u._count.tasks} tareas`} />
-                      <Chip label={`${u._count.grades} califs`} />
-                      <Chip label={`${u._count.schedule} clases`} />
-                      {u.mindboxPassword && <Chip label="Mindbox" color="green" />}
-                      {u.email && <Chip label="Email" color="blue" />}
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Sparkline */}
+            <div className="rounded-2xl p-4" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>
+                  Registros — últimos 14 días
+                </p>
+                <div className="text-right">
+                  <p className="text-[18px] font-bold leading-none" style={{ color: "var(--blue)" }}>{sparkTotal}</p>
+                  <p className="text-[9px] mt-0.5" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>total período</p>
+                </div>
+              </div>
+
+              {/* Barras */}
+              <div className="flex items-end gap-0.5 h-16">
+                {sparkData.map((val, i) => {
+                  const isRecent = i >= 7
+                  return (
+                    <div key={i} className="flex-1 flex flex-col justify-end" style={{ height: "100%" }}>
+                      <div className="rounded-sm w-full"
+                        style={{
+                          height: `${Math.max(val > 0 ? (val / sparkMax) * 100 : 0, val > 0 ? 10 : 2)}%`,
+                          background: val > 0 ? (isRecent ? "var(--blue)" : "var(--blue)") : "var(--s3)",
+                          opacity: val > 0 ? (isRecent ? 1 : 0.4) : 0.2,
+                        }} />
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
+
+              {/* Labels */}
+              <div className="flex justify-between mt-2">
+                <span className="text-[9px]" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>−14d</span>
+                <span className="text-[9px]" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>−7d</span>
+                <span className="text-[9px]" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>hoy</span>
+              </div>
+
+              {/* Semana comparativa */}
+              <div className="flex gap-3 mt-3 pt-3" style={{ borderTop: "1px solid var(--b1)" }}>
+                <div>
+                  <p className="text-[9px] uppercase tracking-[.08em]" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>Sem. anterior</p>
+                  <p className="text-[14px] font-semibold" style={{ color: "var(--tx2)" }}>{sparkPrev}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] uppercase tracking-[.08em]" style={{ fontFamily: "var(--mono)", color: "var(--tx3)" }}>Esta semana</p>
+                  <p className="text-[14px] font-semibold" style={{ color: sparkRecent >= sparkPrev ? "var(--green)" : "var(--amber)" }}>
+                    {sparkRecent}
+                    <span className="text-[10px] ml-1">
+                      {sparkRecent > sparkPrev ? "↑" : sparkRecent < sparkPrev ? "↓" : "="}
+                    </span>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* ── Users table (client — search + filter) ── */}
+          <AdminUserTable users={users.map((u) => ({
+            ...u,
+            status: userStatus(u),
+            noSync: u._count.tasks === 0 && u._count.grades === 0 && u._count.schedule === 0,
+          }))} />
 
         </div>
       </div>
@@ -209,17 +244,3 @@ export default async function AdminPage() {
   )
 }
 
-function Chip({ label, color }: { label: string; color?: "green" | "blue" }) {
-  const styles = {
-    green: { bg: "var(--green-d)", border: "var(--green-b)", text: "var(--green)" },
-    blue:  { bg: "var(--blue-d)",  border: "var(--blue-b)",  text: "var(--blue)"  },
-    default: { bg: "var(--s3)", border: "var(--b1)", text: "var(--tx2)" },
-  }[color ?? "default"]
-
-  return (
-    <span className="text-[10px] rounded px-1.5 py-0.5"
-      style={{ fontFamily: "var(--mono)", background: styles.bg, color: styles.text, border: `1px solid ${styles.border}` }}>
-      {label}
-    </span>
-  )
-}

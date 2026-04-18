@@ -64,7 +64,9 @@ function courseColor(name: string) {
   return COURSE_COLORS[h % COURSE_COLORS.length]
 }
 
-function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
+function TaskCard({ task, onOpen, isSelected, onToggleSelect }: {
+  task: Task; onOpen: (t: Task) => void; isSelected: boolean; onToggleSelect: () => void
+}) {
   const router = useRouter()
   const cardRef = useRef<HTMLDivElement>(null)
   const [toggleLoading, setToggleLoading] = useState(false)
@@ -128,7 +130,7 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
       className="rounded-xl p-4 transition-all cursor-pointer"
       style={{
         background: "var(--card)",
-        border: "1px solid var(--b1)",
+        border: isSelected ? "1px solid var(--blue)" : "1px solid var(--b1)",
         opacity: done ? 0.55 : 1,
         transform: "translateY(0)",
         transition: "border-color .15s, transform .12s",
@@ -144,9 +146,26 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
         e.currentTarget.style.transform = "translateY(0)"
       }}
     >
-      {/* Top row: course tag + actions */}
+      {/* Top row: checkbox + course tag + actions */}
       <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleSelect() }}
+            className="flex items-center justify-center shrink-0 transition-all"
+            style={{
+              width: 17, height: 17, borderRadius: 4, flexShrink: 0,
+              border: isSelected ? "none" : "1.5px solid var(--b2)",
+              background: isSelected ? "var(--blue)" : "transparent",
+              cursor: "pointer",
+            }}
+            title="Seleccionar"
+          >
+            {isSelected && (
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                <path d="M1.5 4.5l2 2 4-4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+          </button>
           <span className="rounded px-2 py-0.5 text-[10px] font-medium"
             style={{ fontFamily: "var(--mono)", background: cc.bg, color: cc.color }}>
             {shortName}
@@ -265,6 +284,33 @@ export function TaskList({ tasks, moodleBaseUrl }: { tasks: Task[]; moodleBaseUr
   const [search, setSearch] = useState("")
   const [showAddModal, setShowAddModal] = useState(false)
   const [detailTask, setDetailTask] = useState<Task | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function handleBulk(action: "done" | "archive") {
+    const ids = [...selectedIds]
+    await fetch("/api/tasks/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids, action }),
+    })
+    toast(
+      action === "done"
+        ? `${ids.length} tarea${ids.length !== 1 ? "s" : ""} completada${ids.length !== 1 ? "s" : ""}`
+        : `${ids.length} tarea${ids.length !== 1 ? "s" : ""} archivada${ids.length !== 1 ? "s" : ""}`,
+      "success"
+    )
+    setSelectedIds(new Set())
+    router.refresh()
+  }
 
   useGSAP(() => {
     const cards = listRef.current?.querySelectorAll("[data-task-card]")
@@ -387,12 +433,55 @@ export function TaskList({ tasks, moodleBaseUrl }: { tasks: Task[]; moodleBaseUr
                 <div className="flex-1 h-px" style={{ background: "var(--b1)" }} />
               </div>
               <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(268px, 100%), 1fr))" }}>
-                {sts.map((t) => <TaskCard key={t.id} task={t} onOpen={setDetailTask} />)}
+                {sts.map((t) => (
+                  <TaskCard
+                    key={t.id}
+                    task={t}
+                    onOpen={setDetailTask}
+                    isSelected={selectedIds.has(t.id)}
+                    onToggleSelect={() => toggleSelect(t.id)}
+                  />
+                ))}
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-2xl px-4 py-3"
+          style={{ background: "var(--card)", border: "1px solid var(--b2)", boxShadow: "0 8px 32px rgba(0,0,0,.5)", whiteSpace: "nowrap" }}>
+          <span className="text-[11px] mr-1 shrink-0" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
+            {selectedIds.size} seleccionada{selectedIds.size !== 1 ? "s" : ""}
+          </span>
+          <button
+            onClick={() => handleBulk("done")}
+            className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-semibold transition-all shrink-0"
+            style={{ background: "var(--green-d)", border: "1px solid var(--green-b)", color: "var(--green)", cursor: "pointer" }}
+          >
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <path d="M2 5.5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Completar
+          </button>
+          <button
+            onClick={() => handleBulk("archive")}
+            className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-semibold transition-all shrink-0"
+            style={{ background: "var(--s3)", border: "1px solid var(--b1)", color: "var(--tx2)", cursor: "pointer" }}
+          >
+            Archivar
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-base leading-none transition-all shrink-0"
+            style={{ background: "var(--s3)", border: "1px solid var(--b1)", color: "var(--tx3)", cursor: "pointer" }}
+            title="Cancelar selección"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </>
   )
 }

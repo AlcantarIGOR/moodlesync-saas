@@ -1,13 +1,30 @@
 "use client"
 
-import { useState } from "react"
-import { loginAction } from "@/app/(auth)/login/actions"
+import { useState, useActionState } from "react"
+import { useFormStatus } from "react-dom"
+import { loginAction, type LoginState } from "@/app/(auth)/login/actions"
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full h-11 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[.98] mt-1"
+      style={{ background: "var(--blue)", border: "none", opacity: pending ? 0.72 : 1, cursor: pending ? "default" : "pointer" }}
+    >
+      {pending ? "Verificando…" : "Iniciar sesión"}
+    </button>
+  )
+}
 
 export function LoginForm({ hasError }: { hasError: boolean }) {
+  const initial: LoginState = { error: hasError ? "Usuario o contraseña incorrectos." : null }
+  const [state, action] = useActionState(loginAction, initial)
   const [showPw, setShowPw] = useState(false)
 
   return (
-    <form action={loginAction} className="space-y-4">
+    <form action={action} className="space-y-4">
       {/* Username */}
       <div>
         <label className="block text-[10px] uppercase tracking-widest mb-1.5"
@@ -50,7 +67,6 @@ export function LoginForm({ hasError }: { hasError: boolean }) {
             aria-label={showPw ? "Ocultar contraseña" : "Mostrar contraseña"}
           >
             {showPw ? (
-              /* Eye-off */
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M2 2l12 12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
                 <path d="M6.5 6.56A2 2 0 0 0 9.44 9.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
@@ -58,7 +74,6 @@ export function LoginForm({ hasError }: { hasError: boolean }) {
                 <path d="M12.5 11.2C13.6 10.2 14.3 9.2 14.5 8c-.8-3.2-3.5-5.5-6.5-5.5-.8 0-1.6.15-2.3.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
               </svg>
             ) : (
-              /* Eye */
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M1.5 8C2.3 4.8 5 2.5 8 2.5S13.7 4.8 14.5 8c-.8 3.2-3.5 5.5-6.5 5.5S2.3 11.2 1.5 8z" stroke="currentColor" strokeWidth="1.3"/>
                 <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/>
@@ -69,21 +84,20 @@ export function LoginForm({ hasError }: { hasError: boolean }) {
       </div>
 
       {/* Error */}
-      {hasError && (
-        <div className="rounded-lg px-3.5 py-2.5 text-xs"
-          style={{ background: "var(--red-d)", border: "1px solid var(--red-b)", color: "var(--red)", fontFamily: "var(--mono)" }}>
-          Usuario o contraseña incorrectos.
+      {state.error && (
+        <div className="flex items-start gap-2.5 rounded-lg px-3.5 py-2.5"
+          style={{ background: "var(--red-d)", border: "1px solid var(--red-b)" }}>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="shrink-0 mt-0.5">
+            <circle cx="6.5" cy="6.5" r="5.5" stroke="var(--red)" strokeWidth="1.2"/>
+            <path d="M6.5 4v3.5M6.5 9.5v.2" stroke="var(--red)" strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+          <p className="text-xs leading-relaxed" style={{ fontFamily: "var(--mono)", color: "var(--red)" }}>
+            {state.error}
+          </p>
         </div>
       )}
 
-      {/* Submit */}
-      <button
-        type="submit"
-        className="w-full h-11 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[.98] mt-1"
-        style={{ background: "var(--blue)", border: "none" }}
-      >
-        Iniciar sesión
-      </button>
+      <SubmitButton />
     </form>
   )
 }

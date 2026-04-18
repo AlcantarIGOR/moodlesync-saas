@@ -22,6 +22,8 @@ model User {
   pushSubs        PushSubscription[]
   notes             Note[]
   noteViewPositions NoteViewPosition[]
+  ownedGroups       StudyGroup[]       @relation("GroupOwner")
+  groupMemberships  StudyGroupMember[]
 }
 
 model PushSubscription {
@@ -50,14 +52,19 @@ model Task {
   attachments        Json?
   status             TaskStatus @default(PENDING)
   isManual           Boolean    @default(false)
+  reminderSentAt     DateTime?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  groupId            String?
+  group              StudyGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   @@unique([userId, moodleAssignmentId])
   @@index([userId])
   @@index([userId, status])
   @@index([userId, dueDate])
+  @@index([groupId])
 }
 
 model Grade {
@@ -128,6 +135,37 @@ model NoteViewPosition {
 
   @@unique([noteId, userId])
   @@index([userId])
+}
+
+model StudyGroup {
+  id        String             @id @default(cuid())
+  name      String
+  materia   String?
+  createdBy String
+  createdAt DateTime           @default(now())
+  owner     User               @relation("GroupOwner", fields: [createdBy], references: [id], onDelete: Cascade)
+  members   StudyGroupMember[]
+  tasks     Task[]
+
+  @@index([createdBy])
+}
+
+model StudyGroupMember {
+  id       String    @id @default(cuid())
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+  group    StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+}
+
+enum GroupRole {
+  OWNER
+  MEMBER
 }
 
 enum Plan {

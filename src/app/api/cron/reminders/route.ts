@@ -25,6 +25,7 @@ export async function GET(req: Request) {
     where: {
       status: "PENDING",
       dueDate: { gte: windowStart, lte: windowEnd },
+      reminderSentAt: null,
     },
     include: {
       user: { select: { id: true, name: true, email: true, pushSubs: true } },
@@ -47,6 +48,7 @@ export async function GET(req: Request) {
   let sent = 0
   let skipped = 0
   let pushSent = 0
+  const processedIds: string[] = []
 
   for (const [, userTasks] of byUser) {
     const user = userTasks[0].user
@@ -96,6 +98,15 @@ export async function GET(req: Request) {
         })
       }
     }
+
+    processedIds.push(...userTasks.map((t) => t.id))
+  }
+
+  if (processedIds.length > 0) {
+    await db.task.updateMany({
+      where: { id: { in: processedIds } },
+      data: { reminderSentAt: new Date() },
+    })
   }
 
   console.log(`[cron/reminders] email sent=${sent} skipped=${skipped} push=${pushSent} window=${windowStart.toISOString()}–${windowEnd.toISOString()}`)
