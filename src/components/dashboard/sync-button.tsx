@@ -45,6 +45,7 @@ export function SyncButton() {
       <button
         onClick={handleSync}
         disabled={loading}
+        data-tour="sync-btn"
         className="flex items-center gap-1.5 h-[34px] px-3.5 rounded-lg text-[13px] font-semibold transition-all disabled:opacity-50"
         style={{
           background: "var(--blue)",

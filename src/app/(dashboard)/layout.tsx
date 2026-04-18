@@ -8,6 +8,8 @@ import { SemesterFilter } from "@/components/dashboard/semester-filter"
 import { MobileBottomNav } from "@/components/dashboard/mobile-nav"
 import { Toaster } from "@/components/dashboard/toaster"
 import { CommandPalette } from "@/components/dashboard/command-palette"
+import { OnboardingTour } from "@/components/dashboard/onboarding-tour"
+import { DashboardMain } from "@/components/dashboard/dashboard-main"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -85,6 +87,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       href: "/dashboard/focus",
       label: "Modo Focus",
       icon: <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.3"/><circle cx="8" cy="8" r="1" fill="currentColor"/></svg>,
+    },
+    {
+      href: "/dashboard/notas",
+      label: "Notas",
+      icon: <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="9" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M11 4l2 2-5 5-2.5.5.5-2.5L11 4z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><path d="M5 6h4M5 9h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
     },
     {
       href: "/dashboard/calificaciones",
@@ -183,7 +190,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* ── MAIN ── */}
       <div className="flex flex-col flex-1 overflow-hidden min-w-0">
 
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <DashboardMain>{children}</DashboardMain>
 
         {/* Mobile bottom nav */}
         <MobileBottomNav />
@@ -192,6 +199,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Global overlays — fixed position, fuera del flujo */}
       <Toaster />
       <CommandPalette />
+      <OnboardingTour userName={username} />
     </div>
   )
 }

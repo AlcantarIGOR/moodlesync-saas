@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
+import { AnimatedCount } from "@/components/dashboard/animated-count"
 
 interface NavItem {
   href: string
@@ -62,7 +63,7 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
                   color: active ? "var(--blue)" : "var(--tx2)",
                 }}
               >
-                {badge}
+                <AnimatedCount value={badge} />
               </span>
             )}
           </Link>

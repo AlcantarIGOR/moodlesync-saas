@@ -3,6 +3,10 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { Task, TaskStatus } from "@prisma/client"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+
+gsap.registerPlugin(useGSAP)
 
 const COLUMNS: { id: TaskStatus; label: string; dot: string }[] = [
   { id: "PENDING",  label: "Pendientes",  dot: "#f59e0b" },
@@ -44,6 +48,7 @@ function KanbanCard({
 
   return (
     <div
+      data-kanban-card
       onPointerDown={(e) => onPointerDown(e, task.id)}
       className="rounded-xl p-3 cursor-grab active:cursor-grabbing transition-all select-none touch-none"
       style={{
@@ -164,13 +169,13 @@ function createGhost(sourceEl: HTMLElement): HTMLDivElement {
     width: ${rect.width}px;
     pointer-events: none;
     opacity: 0.85;
-    transform: scale(1.03) rotate(1.5deg);
+    transform: scale(1) rotate(0deg);
     z-index: 9999;
     border-radius: 0.75rem;
     box-shadow: 0 12px 32px rgba(0,0,0,0.25);
-    transition: transform 0ms, box-shadow 0ms;
   `
   document.body.appendChild(ghost)
+  gsap.to(ghost, { scale: 1.04, rotation: 1.5, duration: 0.18, ease: "back.out(1.8)" })
   return ghost
 }
 
@@ -180,8 +185,18 @@ function createGhost(sourceEl: HTMLElement): HTMLDivElement {
 
 export function KanbanBoard({ initialTasks }: { initialTasks: Task[] }) {
   const router = useRouter()
+  const boardRef = useRef<HTMLDivElement>(null)
   const [tasks, setTasks] = useState(initialTasks)
   const [overCol, setOverCol] = useState<TaskStatus | null>(null)
+
+  useGSAP(() => {
+    const cards = boardRef.current?.querySelectorAll("[data-kanban-card]")
+    if (!cards?.length) return
+    gsap.fromTo(cards,
+      { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.28, ease: "power2.out", stagger: 0.04, clearProps: "transform" }
+    )
+  }, { dependencies: [tasks], scope: boardRef })
 
   // Drag state kept in refs so it never triggers re-renders mid-drag.
   // We also store a ref to tasks so the pointerup closure always sees
@@ -293,6 +308,15 @@ export function KanbanBoard({ initialTasks }: { initialTasks: Task[] }) {
         // Optimistic update
         setTasks((prev) => prev.map((t) => (t.id === dragId ? { ...t, status: targetCol } : t)))
 
+        // Pulse the target column on drop
+        const colEl = document.querySelector(`[data-column="${targetCol}"]`) as HTMLElement | null
+        if (colEl) {
+          gsap.fromTo(colEl,
+            { boxShadow: "0 0 0 2px var(--green), 0 0 18px rgba(34,197,94,0.4)" },
+            { boxShadow: "0 0 0 0px transparent, 0 0 0px transparent", duration: 0.7, ease: "power2.out" }
+          )
+        }
+
         try {
           const res = await fetch(`/api/tasks/${dragId}`, {
             method: "PATCH",
@@ -330,7 +354,7 @@ export function KanbanBoard({ initialTasks }: { initialTasks: Task[] }) {
   }, [])
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div ref={boardRef} className="grid grid-cols-1 md:grid-cols-3 gap-3">
       {COLUMNS.map((col) => (
         <KanbanCol
           key={col.id}

@@ -1,11 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import type { Task } from "@prisma/client"
 import { AddTaskModal } from "@/components/dashboard/add-task-modal"
 import { TaskDetailModal } from "@/components/dashboard/task-detail-modal"
 import { toast } from "@/lib/toast"
+import { useGSAP } from "@gsap/react"
+import gsap from "gsap"
+
+gsap.registerPlugin(useGSAP)
 
 type Filter = "todas" | "pendientes" | "urgentes" | "completadas" | "archivadas"
 
@@ -62,6 +66,7 @@ function courseColor(name: string) {
 
 function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
   const router = useRouter()
+  const cardRef = useRef<HTMLDivElement>(null)
   const [toggleLoading, setToggleLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const status = taskStatus(task)
@@ -86,6 +91,9 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
   async function toggle(e: React.MouseEvent) {
     e.stopPropagation()
     setToggleLoading(true)
+    if (cardRef.current) {
+      gsap.fromTo(cardRef.current, { scale: 0.96 }, { scale: 1, duration: 0.28, ease: "back.out(2.5)" })
+    }
     const newStatus = done ? "PENDING" : "DONE"
     try {
       await fetch(`/api/tasks/${task.id}`, {
@@ -115,6 +123,8 @@ function TaskCard({ task, onOpen }: { task: Task; onOpen: (t: Task) => void }) {
 
   return (
     <div
+      ref={cardRef}
+      data-task-card
       className="rounded-xl p-4 transition-all cursor-pointer"
       style={{
         background: "var(--card)",
@@ -248,12 +258,22 @@ export function TaskList({ tasks, moodleBaseUrl }: { tasks: Task[]; moodleBaseUr
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const listRef = useRef<HTMLDivElement>(null)
 
   // Filter is always derived from the URL — sidebar links and tab buttons both set the URL
   const filter = toFilter(searchParams.get("filter"))
   const [search, setSearch] = useState("")
   const [showAddModal, setShowAddModal] = useState(false)
   const [detailTask, setDetailTask] = useState<Task | null>(null)
+
+  useGSAP(() => {
+    const cards = listRef.current?.querySelectorAll("[data-task-card]")
+    if (!cards?.length) return
+    gsap.fromTo(cards,
+      { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.045, clearProps: "transform" }
+    )
+  }, { dependencies: [filter, search], scope: listRef })
 
   function handleSetFilter(newFilter: Filter) {
     const params = new URLSearchParams(searchParams.toString())
@@ -350,26 +370,28 @@ export function TaskList({ tasks, moodleBaseUrl }: { tasks: Task[]; moodleBaseUr
         </div>
 
         {/* Sections */}
-        {sections.length === 0 ? (
-          <div className="text-center py-12 text-xs" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-            Sin tareas.
-          </div>
-        ) : sections.map(({ label, tasks: sts, color }) => (
-          <div key={label} className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color }}>
-                {label}
-              </span>
-              <span className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-                · {sts.length}
-              </span>
-              <div className="flex-1 h-px" style={{ background: "var(--b1)" }} />
+        <div ref={listRef}>
+          {sections.length === 0 ? (
+            <div className="text-center py-12 text-xs" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
+              Sin tareas.
             </div>
-            <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(268px, 100%), 1fr))" }}>
-              {sts.map((t) => <TaskCard key={t.id} task={t} onOpen={setDetailTask} />)}
+          ) : sections.map(({ label, tasks: sts, color }) => (
+            <div key={label} className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color }}>
+                  {label}
+                </span>
+                <span className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
+                  · {sts.length}
+                </span>
+                <div className="flex-1 h-px" style={{ background: "var(--b1)" }} />
+              </div>
+              <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(268px, 100%), 1fr))" }}>
+                {sts.map((t) => <TaskCard key={t.id} task={t} onOpen={setDetailTask} />)}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </>
   )

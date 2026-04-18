@@ -116,6 +116,15 @@ body {
 
 .animate-fadein { animation: fadein .18s ease; }
 
+@keyframes tour-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+@keyframes tour-pulse {
+  0%, 100% { box-shadow: 0 0 0 9999px rgba(0,0,0,0.78), 0 0 0 2px var(--blue), 0 0 16px rgba(75,140,248,0.5); }
+  50%       { box-shadow: 0 0 0 9999px rgba(0,0,0,0.78), 0 0 0 2px var(--blue), 0 0 28px rgba(75,140,248,0.8); }
+}
+
 .sidebar-link:hover { background: var(--s2) !important; color: var(--tx) !important; }
 
 .login-input:focus {
@@ -123,6 +132,52 @@ body {
   box-shadow: 0 0 0 3px rgba(75,140,248,.15);
 }
 .login-input::placeholder { color: var(--tx3); }
+
+/* ── Design system enhancements ────────────────────────────────────────── */
+
+/* Gradient clip-text */
+.gradient-text {
+  background: linear-gradient(125deg, #4b8cf8 0%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Entrance animations */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Grid accent line sweep */
+@keyframes line-h {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+@keyframes line-v {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0% 0); }
+}
+
+/* Login branding entrance helpers */
+.login-brand-h1 { animation: fade-up 0.55s cubic-bezier(.22,.68,0,1.2) 0.2s both; }
+.login-brand-sub { animation: fade-up 0.5s ease 0.35s both; }
+.login-brand-feat { animation: fade-up 0.5s ease both; }
+
+/* Stat card halo */
+@keyframes halo-pulse {
+  0%, 100% { opacity: 0.22; transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(1.08); }
+}
+.stat-halo {
+  position: absolute; inset: -16px; border-radius: 24px; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(239,68,68,0.3) 0%, transparent 70%);
+  animation: halo-pulse 2.8s ease-in-out infinite;
+}
 
 /* Moodle HTML content rendered in task detail modal */
 .moodle-html p { margin-bottom: 0.5em; }

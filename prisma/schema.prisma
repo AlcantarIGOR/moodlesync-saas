@@ -20,6 +20,8 @@ model User {
   grades          Grade[]
   schedule        ClassSession[]
   pushSubs        PushSubscription[]
+  notes             Note[]
+  noteViewPositions NoteViewPosition[]
 }
 
 model PushSubscription {
@@ -93,6 +95,39 @@ model ClassSession {
 
   @@index([userId])
   @@index([userId, dayOfWeek])
+}
+
+model Note {
+  id            String             @id @default(cuid())
+  userId        String
+  content       String             @default("")
+  color         String             @default("yellow")
+  x             Int                @default(100)
+  y             Int                @default(100)
+  pinned        Boolean            @default(false)
+  shared        Boolean            @default(false)
+  courseId      Int?
+  courseName    String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  viewPositions NoteViewPosition[]
+
+  @@index([userId])
+  @@index([shared, courseId])
+}
+
+model NoteViewPosition {
+  id     String @id @default(cuid())
+  noteId String
+  userId String
+  x      Int    @default(100)
+  y      Int    @default(100)
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([noteId, userId])
+  @@index([userId])
 }
 
 enum Plan {

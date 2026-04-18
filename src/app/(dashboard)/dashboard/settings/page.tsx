@@ -69,7 +69,7 @@ export default async function SettingsPage() {
           </div>
 
           {/* Notifications card */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
+          <div data-tour="settings-email" className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
             <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--b1)", background: "var(--s2)" }}>
               <div className="flex items-center justify-between">
                 <p className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
@@ -97,7 +97,7 @@ export default async function SettingsPage() {
           </div>
 
           {/* Push notifications card */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
+          <div data-tour="settings-push" className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
             <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--b1)", background: "var(--s2)" }}>
               <p className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
                 Notificaciones Push
@@ -114,7 +114,7 @@ export default async function SettingsPage() {
           </div>
 
           {/* Mindbox card */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
+          <div data-tour="settings-mindbox" className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
             <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--b1)", background: "var(--s2)" }}>
               <div className="flex items-center justify-between">
                 <p className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
