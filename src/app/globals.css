@@ -3,12 +3,16 @@
 :root {
   --bg: #0a0a0b;
   --card: #111113;
+  --s1: #141416;
   --s2: #1a1a1d;
   --s3: #1f1f23;
   --s4: #2a2a2f;
   --b1: #1f1f23;
   --b2: rgba(255,255,255,0.09);
   --b3: rgba(255,255,255,0.15);
+  --bg-glass: rgba(10,10,11,0.85);
+  --bg-glass-soft: rgba(10,10,11,0.60);
+  --bg-glass-heavy: rgba(10,10,11,0.92);
   --tx: #e8e8e8;
   --tx2: #6b6b6f;
   --tx3: #3d3d40;
@@ -191,3 +195,56 @@ body {
 .moodle-html h1,.moodle-html h2,.moodle-html h3 { color: var(--tx); font-weight: 600; margin-bottom: 0.4em; }
 .moodle-html table { width: 100%; border-collapse: collapse; font-size: 11px; }
 .moodle-html td, .moodle-html th { border: 1px solid var(--b1); padding: 4px 8px; }
+
+/* ── Light theme ──────────────────────────────────────────────────────────── */
+
+html.light {
+  --bg: #f4f4f6;
+  --card: #ffffff;
+  --s1: #eeeef2;
+  --s2: #e6e6eb;
+  --s3: #d8d8df;
+  --s4: #cbcbd4;
+  --b1: #d8d8df;
+  --b2: rgba(0,0,0,0.08);
+  --b3: rgba(0,0,0,0.14);
+  --bg-glass: rgba(244,244,246,0.88);
+  --bg-glass-soft: rgba(244,244,246,0.75);
+  --bg-glass-heavy: rgba(244,244,246,0.96);
+  --tx: #111113;
+  --tx2: #56565e;
+  --tx3: #9a9aa4;
+  --blue-d: rgba(75,140,248,0.10);
+  --blue-b: rgba(75,140,248,0.22);
+  --red-d: rgba(239,68,68,0.08);
+  --red-b: rgba(239,68,68,0.18);
+  --amber-d: rgba(245,158,11,0.08);
+  --amber-b: rgba(245,158,11,0.18);
+  --green-d: rgba(34,197,94,0.08);
+  --green-b: rgba(34,197,94,0.18);
+  --purple-d: rgba(139,92,246,0.08);
+  /* Tailwind compat overrides */
+  --background: 240 5% 96%;
+  --foreground: 240 5% 7%;
+  --secondary: 240 5% 90%;
+  --secondary-foreground: 240 5% 7%;
+  --muted: 240 5% 90%;
+  --muted-foreground: 240 3% 34%;
+  --border: 240 5% 85%;
+  --input: 240 5% 90%;
+}
+
+html.light body {
+  color-scheme: light;
+}
+
+/* Smooth theme transition */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+/* Disable transition on elements that shouldn't animate (prevents lag) */
+svg, img, canvas, video, [data-no-transition] {
+  transition: none !important;
+}

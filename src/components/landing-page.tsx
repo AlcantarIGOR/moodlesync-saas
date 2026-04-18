@@ -109,7 +109,7 @@ export function LandingPage() {
 
       {/* ── NAV ── */}
       <nav className="flex items-center justify-between px-6 md:px-12 h-[60px] sticky top-0 z-50"
-        style={{ background: "rgba(10,10,11,.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--b1)", opacity: 0 }}>
+        style={{ background: "var(--bg-glass)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--b1)", opacity: 0 }}>
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--blue)" }}>
             <svg width="16" height="16" viewBox="0 0 22 22" fill="none">

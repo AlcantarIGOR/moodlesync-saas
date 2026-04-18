@@ -10,6 +10,7 @@ import { Toaster } from "@/components/dashboard/toaster"
 import { CommandPalette } from "@/components/dashboard/command-palette"
 import { OnboardingTour } from "@/components/dashboard/onboarding-tour"
 import { DashboardMain } from "@/components/dashboard/dashboard-main"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -179,9 +180,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
               style={{ background: "var(--blue-d)", border: "1px solid var(--blue-b)", color: "var(--blue)", fontFamily: "var(--mono)" }}>
               {initials}
             </div>
-            <span className="text-[11px] truncate" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
+            <span className="text-[11px] truncate flex-1" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
               {username}
             </span>
+            <ThemeToggle />
           </div>
           <LogoutButton />
         </div>

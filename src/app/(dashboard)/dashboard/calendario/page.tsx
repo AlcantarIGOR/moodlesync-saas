@@ -147,7 +147,7 @@ export default async function CalendarioPage({
 
       {/* ── Navbar ── */}
       <div className="flex items-center gap-3 px-5 shrink-0"
-        style={{ height: 54, borderBottom: "1px solid var(--b1)", background: "rgba(10,10,11,.92)", backdropFilter: "blur(12px)", zIndex: 30 }}>
+        style={{ height: 54, borderBottom: "1px solid var(--b1)", background: "var(--bg-glass-heavy)", backdropFilter: "blur(12px)", zIndex: 30 }}>
         <span className="text-[15px] font-semibold" style={{ color: "var(--tx)", letterSpacing: "-.3px" }}>Calendario</span>
         <div className="flex-1" />
         {/* Stats chips */}

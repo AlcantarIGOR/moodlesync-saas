@@ -63,7 +63,7 @@ export default async function NotasPage() {
         style={{
           height: 54,
           borderBottom: "1px solid var(--b1)",
-          background: "rgba(10,10,11,.85)",
+          background: "var(--bg-glass)",
           backdropFilter: "blur(10px)",
         }}
       >

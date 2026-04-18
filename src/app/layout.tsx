@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Outfit, JetBrains_Mono } from "next/font/google"
 import Script from "next/script"
+import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
 const outfit = Outfit({
@@ -50,9 +51,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`h-full ${outfit.variable} ${jetbrainsMono.variable}`}>
+    <html lang="es" className={`h-full ${outfit.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Anti-flash: apply saved theme before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('ms-theme');if(t==='light')document.documentElement.classList.add('light')}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="h-full antialiased">
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <Script
           id="sw-register"
           strategy="afterInteractive"

@@ -109,7 +109,7 @@ export default async function DashboardPage({
     <div className="flex flex-col h-full">
       {/* Navbar */}
       <div className="flex items-center gap-3 px-5 shrink-0"
-        style={{ height: 54, borderBottom: "1px solid var(--b1)", background: "rgba(10,10,11,.85)", backdropFilter: "blur(10px)" }}>
+        style={{ height: 54, borderBottom: "1px solid var(--b1)", background: "var(--bg-glass)", backdropFilter: "blur(10px)" }}>
         <span className="text-[15px] font-semibold" style={{ color: "var(--tx)", letterSpacing: "-.3px" }}>Dashboard</span>
         <div className="flex-1" />
         <SyncButton />

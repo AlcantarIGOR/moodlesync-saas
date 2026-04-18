@@ -685,7 +685,7 @@ export function NotesBoard({
       {/* Tabs */}
       <div style={{
         display: "flex", gap: 4, padding: "8px 16px",
-        borderBottom: "1px solid var(--b1)", background: "rgba(10,10,11,.6)", flexShrink: 0,
+        borderBottom: "1px solid var(--b1)", background: "var(--bg-glass-soft)", flexShrink: 0,
       }}>
         {(["mine", "shared"] as const).map((t) => (
           <button
