@@ -23,7 +23,9 @@ export async function syncUserTasks(
 
   const normalized = assignments.map((assignment) => {
     const courseName = courseMap.get(assignment.course) ?? null
-    const attachments: MoodleFile[] = (assignment.introfiles ?? [])
+    // introattachments = files attached to the assignment description (visible to students)
+    // introfiles = files embedded inside the intro HTML (e.g. inline formula images) — already rendered
+    const attachments: MoodleFile[] = (assignment.introattachments ?? [])
       .filter((f) => f.filename && f.fileurl)
       .map((f) => ({
         filename: f.filename,
@@ -63,6 +65,7 @@ export async function syncUserTasks(
       dueDate: true,
       status: true,
       description: true,
+      attachments: true,
     },
   })
 
@@ -82,8 +85,10 @@ export async function syncUserTasks(
       existing.courseName !== a.courseName ||
       existing.semester !== a.semester ||
       existing.dueDate?.getTime() !== a.dueDate?.getTime() ||
-      // Populate description/attachments that were missing before this feature
+      // Populate description that was missing before this feature
       (a.description && existing.description === null) ||
+      // Self-correct attachments — fixes tasks synced before introfiles → introattachments
+      JSON.stringify(existing.attachments ?? null) !== JSON.stringify(a.attachments) ||
       // Auto-mark as DONE if Moodle shows submitted (only upgrade, never downgrade)
       (a.submitted && existing.status === "PENDING")
     )

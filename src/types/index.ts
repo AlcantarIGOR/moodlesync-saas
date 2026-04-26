@@ -23,6 +23,7 @@ export interface MoodleAssignment {
   allowsubmissionsfromdate: number
   intro: string
   introfiles: MoodleFile[]
+  introattachments?: MoodleFile[]
   configs: unknown[]
 }
 
