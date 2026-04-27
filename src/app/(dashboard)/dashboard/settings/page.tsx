@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { EmailForm } from "@/components/dashboard/email-form"
 import { MindboxForm } from "@/components/dashboard/mindbox-form"
 import { PushToggle } from "@/components/dashboard/push-toggle"
+import { InstallAppCard } from "@/components/dashboard/install-app-card"
 
 export default async function SettingsPage() {
   const session = await auth()
@@ -33,6 +34,9 @@ export default async function SettingsPage() {
 
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-xl mx-auto space-y-4">
+
+          {/* Install app card (PWA) — auto-hides if already installed */}
+          <InstallAppCard />
 
           {/* Profile card */}
           <div className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
