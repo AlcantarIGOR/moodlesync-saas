@@ -1,10 +1,17 @@
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 // Sin dominio verificado en Resend usar onboarding@resend.dev
 // Una vez verificado moodlesync.app en Resend, cambiar a recordatorios@moodlesync.app
 const FROM = process.env.RESEND_FROM_EMAIL ?? "MoodleSync <onboarding@resend.dev>"
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://moodlesync.app"
+
+let resendClient: Resend | null = null
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY
+  if (!key) return null
+  if (!resendClient) resendClient = new Resend(key)
+  return resendClient
+}
 
 export interface ReminderTask {
   title: string
@@ -124,7 +131,8 @@ export async function sendReminderEmail(
   name: string,
   tasks: ReminderTask[]
 ): Promise<boolean> {
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend()
+  if (!resend) {
     console.warn("[email] RESEND_API_KEY not set — skipping email")
     return false
   }
