@@ -111,7 +111,7 @@ export function LandingPage() {
       <nav className="flex items-center justify-between px-6 md:px-12 h-[60px] sticky top-0 z-50"
         style={{ background: "var(--bg-glass)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--b1)", opacity: 0 }}>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--blue)" }}>
+          <div aria-hidden="true" className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--blue)" }}>
             <svg width="16" height="16" viewBox="0 0 22 22" fill="none">
               <circle cx="11" cy="11" r="4" fill="white"/>
               <circle cx="11" cy="11" r="9" stroke="white" strokeWidth="1.8"/>
@@ -130,6 +130,7 @@ export function LandingPage() {
         </Link>
       </nav>
 
+      <main>
       {/* ── HERO ── */}
       <section className="relative flex flex-col items-center text-center px-6 pt-24 pb-20 overflow-hidden">
         {/* Grid bg */}
@@ -166,7 +167,7 @@ export function LandingPage() {
 
         <h1 data-hero className="relative text-4xl md:text-6xl font-bold leading-tight tracking-tight mb-5 max-w-3xl"
           style={{ letterSpacing: "-1.5px", opacity: 0 }}>
-          Todas tus tareas del ITCG,{" "}
+          {`Todas tus tareas del ITCG, `}
           <span className="gradient-text">en un solo lugar.</span>
         </h1>
 
@@ -206,17 +207,17 @@ export function LandingPage() {
       {/* ── STATS STRIP ── */}
       <div className="stats-strip border-y" style={{ borderColor: "var(--b1)", background: "var(--card)" }}>
         <div className="max-w-3xl mx-auto px-6 py-6 grid grid-cols-3 gap-4 text-center">
-          <div className="stat-item" style={{ opacity: 0 }}>
-            <p className="stat-pct text-2xl font-bold mb-0.5" style={{ fontFamily: "var(--mono)", color: "var(--blue)" }}>0%</p>
-            <p className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>Gratis para empezar</p>
+          <div className="stat-item" role="group" aria-label="100% gratis para empezar" style={{ opacity: 0 }}>
+            <p className="stat-pct text-2xl font-bold mb-0.5" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--blue)" }}>0%</p>
+            <p className="text-[11px]" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>Gratis para empezar</p>
           </div>
-          <div className="stat-item" style={{ opacity: 0 }}>
-            <p className="text-2xl font-bold mb-0.5" style={{ fontFamily: "var(--mono)", color: "var(--blue)" }}>Auto</p>
-            <p className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>Sincronización Moodle</p>
+          <div className="stat-item" role="group" aria-label="Sincronización Moodle automática" style={{ opacity: 0 }}>
+            <p className="text-2xl font-bold mb-0.5" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--blue)" }}>Auto</p>
+            <p className="text-[11px]" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>Sincronización Moodle</p>
           </div>
-          <div className="stat-item" style={{ opacity: 0 }}>
-            <p className="text-2xl font-bold mb-0.5" style={{ fontFamily: "var(--mono)", color: "var(--blue)" }}>0</p>
-            <p className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>Registros adicionales</p>
+          <div className="stat-item" role="group" aria-label="Cero registros adicionales" style={{ opacity: 0 }}>
+            <p className="text-2xl font-bold mb-0.5" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--blue)" }}>0</p>
+            <p className="text-[11px]" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>Registros adicionales</p>
           </div>
         </div>
       </div>
@@ -269,7 +270,7 @@ export function LandingPage() {
               className="feature-card rounded-2xl p-5 flex flex-col gap-3 transition-all"
               style={{ background: "var(--card)", border: "1px solid var(--b1)", opacity: 0 }}
             >
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              <div aria-hidden="true" className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: "var(--blue-d)", border: "1px solid var(--blue-b)", color: "var(--blue)" }}>
                 <span className="w-5 h-5">{icon}</span>
               </div>
@@ -337,12 +338,13 @@ export function LandingPage() {
           </svg>
         </Link>
       </section>
+      </main>
 
       {/* ── FOOTER ── */}
       <footer className="px-6 md:px-12 py-6 flex items-center justify-between flex-wrap gap-3"
         style={{ borderTop: "1px solid var(--b1)", background: "var(--card)" }}>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: "var(--blue)" }}>
+          <div aria-hidden="true" className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: "var(--blue)" }}>
             <svg width="12" height="12" viewBox="0 0 22 22" fill="none">
               <circle cx="11" cy="11" r="4" fill="white"/>
               <circle cx="11" cy="11" r="9" stroke="white" strokeWidth="1.8"/>
