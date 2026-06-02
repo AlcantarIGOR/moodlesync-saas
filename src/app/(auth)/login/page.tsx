@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/dashboard/login-form"
+import { LoginGlow } from "@/components/dashboard/login-glow"
 
 export default async function LoginPage({
   searchParams,
@@ -22,38 +23,45 @@ export default async function LoginPage({
           opacity: .025,
         }} />
 
+        {/* Constellation Canvas & Glowing Dots */}
+        <LoginGlow />
+
         {/* Animated accent lines — H */}
-        <div className="absolute pointer-events-none" style={{
+        <div className="absolute pointer-events-none z-10" style={{
           left: 0, right: 0, top: "26%", height: "1px",
           background: "linear-gradient(to right, transparent 0%, rgba(75,140,248,0.55) 35%, rgba(75,140,248,0.55) 65%, transparent 100%)",
           animation: "line-h 1.1s cubic-bezier(.4,0,.2,1) 0.2s both",
         }} />
-        <div className="absolute pointer-events-none" style={{
+        <div className="absolute pointer-events-none z-10" style={{
           left: 0, right: 0, top: "72%", height: "1px",
           background: "linear-gradient(to right, transparent 0%, rgba(75,140,248,0.35) 30%, rgba(75,140,248,0.35) 70%, transparent 100%)",
           animation: "line-h 1.2s cubic-bezier(.4,0,.2,1) 0.45s both",
         }} />
 
         {/* Animated accent lines — V */}
-        <div className="absolute pointer-events-none" style={{
+        <div className="absolute pointer-events-none z-10" style={{
           top: 0, bottom: 0, left: "35%", width: "1px",
           background: "linear-gradient(to bottom, transparent 0%, rgba(75,140,248,0.4) 30%, rgba(75,140,248,0.4) 70%, transparent 100%)",
           animation: "line-v 1.3s cubic-bezier(.4,0,.2,1) 0.35s both",
         }} />
-        <div className="absolute pointer-events-none" style={{
+        <div className="absolute pointer-events-none z-10" style={{
           top: 0, bottom: 0, left: "72%", width: "1px",
           background: "linear-gradient(to bottom, transparent 0%, rgba(75,140,248,0.25) 20%, rgba(75,140,248,0.25) 80%, transparent 100%)",
           animation: "line-v 1.4s cubic-bezier(.4,0,.2,1) 0.5s both",
         }} />
 
         {/* Radial glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none z-[1]"
           style={{ background: "radial-gradient(circle,rgba(75,140,248,.09) 0%,transparent 65%)" }} />
 
         {/* Logo */}
         <div className="flex items-center gap-3 mb-12 relative z-10 login-brand-h1"
           style={{ animationDelay: "0s" }}>
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: "var(--blue)" }}>
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center animate-pulse-slow" 
+            style={{ 
+              background: "linear-gradient(135deg, var(--blue) 0%, #2563eb 100%)", 
+              boxShadow: "0 0 16px 2px rgba(75,140,248,0.45), inset 0 1px 0 rgba(255,255,255,0.2)" 
+            }}>
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
               <circle cx="11" cy="11" r="4" fill="white"/>
               <circle cx="11" cy="11" r="9" stroke="white" strokeWidth="1.8"/>
@@ -92,18 +100,26 @@ export default async function LoginPage({
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex-1 flex items-center justify-center px-8 py-10 relative"
+      <div className="flex-1 flex items-center justify-center px-8 py-10 relative overflow-hidden"
         style={{ background: "var(--bg)" }}>
 
         {/* Subtle radial behind the form */}
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 45%, rgba(75,140,248,.05) 0%, transparent 60%)" }} />
+          style={{ background: "radial-gradient(ellipse at 50% 45%, rgba(75,140,248,.04) 0%, transparent 60%)" }} />
+
+        {/* Ambient background glow matching ONYX style */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full pointer-events-none opacity-45"
+          style={{ background: "radial-gradient(circle, rgba(75,140,248,.07) 0%, transparent 70%)", filter: "blur(40px)" }} />
 
         <div className="w-full max-w-[380px] relative z-10">
 
           {/* Mobile logo */}
           <div className="flex items-center gap-2.5 mb-8 md:hidden">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--blue)" }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center animate-pulse-slow" 
+              style={{ 
+                background: "linear-gradient(135deg, var(--blue) 0%, #2563eb 100%)", 
+                boxShadow: "0 0 10px rgba(75,140,248,0.4)" 
+              }}>
               <svg width="16" height="16" viewBox="0 0 22 22" fill="none">
                 <circle cx="11" cy="11" r="4" fill="white"/>
                 <circle cx="11" cy="11" r="9" stroke="white" strokeWidth="1.8"/>

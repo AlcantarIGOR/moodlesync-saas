@@ -10,8 +10,8 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full h-11 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[.98] mt-1"
-      style={{ background: "var(--blue)", border: "none", opacity: pending ? 0.72 : 1, cursor: pending ? "default" : "pointer" }}
+      className="submit-glow-btn w-full h-11 rounded-lg text-sm font-semibold text-white mt-1 cursor-pointer disabled:cursor-default"
+      style={{ opacity: pending ? 0.72 : 1 }}
     >
       {pending ? "Verificando…" : "Iniciar sesión"}
     </button>
@@ -37,8 +37,8 @@ export function LoginForm({ hasError }: { hasError: boolean }) {
           placeholder="ej. L25291016"
           autoComplete="username"
           required
-          className="login-input w-full h-11 rounded-lg px-3.5 text-sm outline-none transition-all"
-          style={{ background: "var(--s2)", border: "1px solid var(--b1)", color: "var(--tx)" }}
+          className="login-input w-full h-11 rounded-lg px-3.5 text-sm outline-none border transition-all"
+          style={{ background: "rgba(26,26,29,0.32)", borderColor: "rgba(255,255,255,0.06)", color: "var(--tx)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
         />
       </div>
 
@@ -55,8 +55,8 @@ export function LoginForm({ hasError }: { hasError: boolean }) {
             placeholder="••••••••••"
             autoComplete="current-password"
             required
-            className="login-input w-full h-11 rounded-lg px-3.5 pr-11 text-sm outline-none transition-all"
-            style={{ background: "var(--s2)", border: "1px solid var(--b1)", color: "var(--tx)" }}
+            className="login-input w-full h-11 rounded-lg px-3.5 pr-11 text-sm outline-none border transition-all"
+            style={{ background: "rgba(26,26,29,0.32)", borderColor: "rgba(255,255,255,0.06)", color: "var(--tx)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
           />
           <button
             type="button"

@@ -131,11 +131,59 @@ body {
 
 .sidebar-link:hover { background: var(--s2) !important; color: var(--tx) !important; }
 
+.login-input {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.login-input:hover {
+  border-color: rgba(75, 140, 248, 0.38) !important;
+  background: rgba(26, 26, 29, 0.5) !important;
+}
 .login-input:focus {
   border-color: var(--blue) !important;
-  box-shadow: 0 0 0 3px rgba(75,140,248,.15);
+  box-shadow: 0 0 0 4px rgba(75, 140, 248, 0.18), inset 0 0 8px rgba(75, 140, 248, 0.05) !important;
+  background: rgba(26, 26, 29, 0.45) !important;
 }
 .login-input::placeholder { color: var(--tx3); }
+
+/* Chrome / Safari / Edge Autofill aesthetics override for dark glassmorphism */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #111113 inset !important; /* Var --card background */
+  -webkit-text-fill-color: var(--tx) !important;
+  caret-color: var(--tx);
+  border-color: rgba(75, 140, 248, 0.22) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+html.light input:-webkit-autofill,
+html.light input:-webkit-autofill:hover, 
+html.light input:-webkit-autofill:focus, 
+html.light input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important; /* Light var --card background */
+  -webkit-text-fill-color: var(--tx) !important;
+  caret-color: var(--tx);
+  border-color: rgba(75, 140, 248, 0.15) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Premium submit button with glow and dynamic feedback */
+.submit-glow-btn {
+  background: linear-gradient(135deg, var(--blue) 0%, #2563eb 100%) !important;
+  box-shadow: 0 4px 14px 0 rgba(75, 140, 248, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.submit-glow-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px 0 rgba(75, 140, 248, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.25) !important;
+  filter: brightness(1.05);
+}
+.submit-glow-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+  box-shadow: 0 2px 8px 0 rgba(75, 140, 248, 0.25) !important;
+}
 
 /* ── Design system enhancements ────────────────────────────────────────── */
 
