@@ -324,17 +324,20 @@ export function LandingPage() {
       <nav className="flex items-center justify-between px-6 md:px-12 h-[64px] sticky top-0 z-50 transition-all border-b"
         style={{ background: "var(--bg-glass)", backdropFilter: "blur(16px)", borderColor: "rgba(255,255,255,0.06)", opacity: 0 }}>
         <div className="flex items-center gap-3">
-          <div aria-hidden="true" className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, var(--blue) 0%, #06b6d4 100%)" }}>
-            <svg width="16" height="16" viewBox="0 0 22 22" fill="none">
-              <circle cx="11" cy="11" r="4" fill="white"/>
-              <circle cx="11" cy="11" r="9" stroke="white" strokeWidth="1.8"/>
-            </svg>
-          </div>
-          <span className="text-base font-bold tracking-tight text-white">MoodleSync</span>
-          <span className="hidden sm:inline text-[9px] px-2 py-0.5 rounded font-semibold tracking-wider uppercase"
-            style={{ fontFamily: "var(--mono)", background: "rgba(75,140,248,0.1)", color: "var(--blue)", border: "1px solid rgba(75,140,248,0.2)" }}>
+          <Link href="/" className="flex items-center gap-2.5 text-white hover:opacity-90 transition-all select-none">
+            <div aria-hidden="true" className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, var(--blue) 0%, #06b6d4 100%)" }}>
+              <svg width="16" height="16" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="4" fill="white"/>
+                <circle cx="11" cy="11" r="9" stroke="white" strokeWidth="1.8"/>
+              </svg>
+            </div>
+            <span className="text-base font-bold tracking-tight">MoodleSync</span>
+          </Link>
+          <a href="https://onyxinc.dev/edu" target="_blank" rel="noopener noreferrer" 
+            className="hidden sm:inline text-[9px] px-2 py-0.5 rounded font-semibold tracking-wider uppercase transition-all hover:scale-105 active:scale-95"
+            style={{ fontFamily: "var(--mono)", background: "rgba(75,140,248,0.1)", color: "var(--blue)", border: "1px solid rgba(75,140,248,0.2)", textDecoration: "none" }}>
             by ONYX Inc.
-          </span>
+          </a>
         </div>
         <Link href="/login"
           className="flex items-center h-9 px-5 rounded-full text-xs font-bold transition-all hover:scale-105"
@@ -825,14 +828,18 @@ export function LandingPage() {
       <footer className="px-6 md:px-12 py-8 flex items-center justify-between flex-wrap gap-4 border-t"
         style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)" }}>
         <div className="flex items-center gap-3">
-          <div aria-hidden="true" className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: "var(--blue)" }}>
-            <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-              <circle cx="11" cy="11" r="4" fill="white"/>
-              <circle cx="11" cy="11" r="9" stroke="white" strokeWidth="1.8"/>
-            </svg>
-          </div>
-          <span className="text-sm font-bold tracking-tight text-white">MoodleSync</span>
-          <span className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>· by ONYX Inc. · 2026 · <a href="https://github.com/AlcantarIGOR/moodlesync-saas" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" style={{ textDecoration: "underline" }}>Código Abierto</a></span>
+          <Link href="/" className="flex items-center gap-2 text-white hover:opacity-90 transition-all select-none">
+            <div aria-hidden="true" className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: "var(--blue)" }}>
+              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="4" fill="white"/>
+                <circle cx="11" cy="11" r="9" stroke="white" strokeWidth="1.8"/>
+              </svg>
+            </div>
+            <span className="text-sm font-bold tracking-tight">MoodleSync</span>
+          </Link>
+          <span className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
+            · <a href="https://onyxinc.dev" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" style={{ textDecoration: "underline" }}>by ONYX Inc.</a> · 2026 · <a href="https://github.com/AlcantarIGOR/moodlesync-saas" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" style={{ textDecoration: "underline" }}>Código Abierto</a>
+          </span>
         </div>
         <Link href="/login" className="text-[10px] font-semibold tracking-wider uppercase text-white/50 hover:text-white transition-colors"
           style={{ fontFamily: "var(--mono)", textDecoration: "none" }}>
