@@ -296,3 +296,23 @@ html.light body {
 svg, img, canvas, video, [data-no-transition] {
   transition: none !important;
 }
+
+/* ─── Grid 3D de Perspectiva Premium (Landing) ─── */
+.cyber-perspective-grid {
+  background-image: 
+    linear-gradient(to right, rgba(75, 140, 248, 0.14) 1px, transparent 1px), 
+    linear-gradient(to bottom, rgba(75, 140, 248, 0.14) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: none; /* Flat 2D grid on mobile for perfect iOS Safari GPU memory optimization */
+  transform-origin: center top;
+  mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 80%);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@media (min-w: 1024px) {
+  .cyber-perspective-grid {
+    transform: rotateX(60deg) translateY(-10%) translateZ(0);
+  }
+}

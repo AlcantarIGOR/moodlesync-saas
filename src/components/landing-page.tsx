@@ -350,17 +350,8 @@ export function LandingPage() {
       {/* ── HERO (Layout Asimétrico en 2 Columnas de Producto) ── */}
       <section className="relative px-6 md:px-12 pt-20 pb-24 overflow-hidden max-w-7xl mx-auto z-10">
         
-        {/* Grid 3D de Perspectiva en el fondo de la pantalla — Más visible y anti-aliased por GPU */}
-        <div className="absolute -top-[40%] -left-[20%] -right-[20%] -bottom-[20%] w-[140%] h-[140%] pointer-events-none opacity-[0.24] z-0" style={{
-          backgroundImage: "linear-gradient(to right, rgba(75,140,248,0.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,140,248,0.14) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-          transform: "rotateX(60deg) translateY(-10%) translateZ(0)",
-          transformOrigin: "center top",
-          maskImage: "radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 80%)",
-          WebkitMaskImage: "radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 80%)",
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-        }} />
+        {/* Grid de Perspectiva en el fondo de la pantalla — Optimizado para móviles y anti-aliased por GPU */}
+        <div className="cyber-perspective-grid absolute -top-[40%] -left-[20%] -right-[20%] -bottom-[20%] w-[140%] h-[140%] pointer-events-none opacity-[0.12] lg:opacity-[0.24] z-0" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
           
