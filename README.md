@@ -172,11 +172,15 @@ Redirects 308 desde `moodlesync-saas.vercel.app` y previews legacy hacia el domi
 
 ---
 
-## Licencia
+## Licencia y Descargo de Responsabilidad
 
-Privado. Codigo propietario de **ONYX Inc.** Todos los derechos reservados.
+Este repositorio se publica con fines **educativos y de portafolio profesional** bajo la licencia de código abierto de **ONYX Inc.** Puedes explorar el código, aprender de su arquitectura Next.js 16 / Prisma 7, y replicar las técnicas de animación GSAP. 
 
-Si eres estudiante del ITCG y quieres usar la app, entra a https://moodlesync.onyxinc.dev — es gratis.
+### Descargo de Responsabilidad Académico (Disclaimer)
+> [!IMPORTANT]
+> **MoodleSync** es una plataforma de software totalmente **independiente** desarrollada por **ONYX Inc.** 
+> No está afiliada, respaldada, patrocinada ni asociada oficialmente con el **Tecnológico Nacional de México (TecNM)** ni con el **Instituto Tecnológico de Ciudad Guzmán (ITCG)**. 
+> Todos los nombres de productos, marcas, logotipos e instituciones mencionadas son marcas registradas de sus respectivos propietarios. El uso de la integración con Moodle e instrumentación de scraping de Mindbox se realiza de manera ética, local y exclusiva bajo el control de las credenciales del estudiante, sin almacenar contraseñas en texto plano ni vulnerar la integridad de los sistemas institucionales.
 
 ---
 
