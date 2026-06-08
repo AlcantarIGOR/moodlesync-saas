@@ -375,7 +375,7 @@ export function LandingPage() {
               <span className="gradient-text">sin el caos.</span>
             </h1>
 
-            <p data-hero className="text-sm md:text-base leading-relaxed mb-8 text-white/50 max-w-lg"
+            <p data-hero className="text-sm md:text-base leading-relaxed mb-8 text-white/70 max-w-lg"
               style={{ opacity: 0 }}>
               Sincroniza tus cursos escolares automáticamente. Gestiona tareas pendientes, boleta de calificaciones y tu horario semanal en una sola consola ágil diseñada para ti.
             </p>
@@ -529,9 +529,9 @@ export function LandingPage() {
       {/* ── STATS STRIP ── */}
       <div className="stats-strip border-y" style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.015)" }}>
         <div className="max-w-4xl mx-auto px-6 py-8 grid grid-cols-3 gap-6 text-center">
-          <div className="stat-item flex flex-col items-center" role="group" aria-label="100% gratis para empezar" style={{ opacity: 0 }}>
+          <div className="stat-item flex flex-col items-center" role="group" aria-label="100% gratuito" style={{ opacity: 0 }}>
             <p className="stat-pct text-3xl font-bold mb-1" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--blue)" }}>0%</p>
-            <p className="text-[10px] font-bold tracking-wider uppercase" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>Gratis para empezar</p>
+            <p className="text-[10px] font-bold tracking-wider uppercase" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>100% Gratuito</p>
           </div>
           <div className="stat-item flex flex-col items-center" role="group" aria-label="Sincronización Moodle automática" style={{ opacity: 0 }}>
             <p className="text-3xl font-bold mb-1" aria-hidden="true" style={{ fontFamily: "var(--mono)", color: "var(--blue)" }}>Auto</p>
@@ -739,7 +739,7 @@ export function LandingPage() {
               },
               {
                 q: "¿Es completamente gratis?",
-                a: "Sí. MoodleSync tiene acceso gratuito completo para todos los alumnos del ITCG. Todas las funcionalidades de la aplicación están disponibles sin costo tras eliminarse los planes de pago en abril de 2026."
+                a: "Sí. MoodleSync es completamente gratuito para todos los estudiantes del ITCG. Todas las funcionalidades de la aplicación están disponibles sin costo ni limitaciones."
               },
               {
                 q: "¿Funciona en mi celular?",
@@ -761,16 +761,23 @@ export function LandingPage() {
               <div key={i} className="faq-item" style={{ opacity: 0 }}>
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  aria-expanded={openFaq === i}
+                  aria-controls={`faq-answer-${i}`}
                   className="w-full text-left p-5 bg-white/[0.015] border border-white/[0.07] hover:border-white/15 rounded-xl transition-all duration-300"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <span className="text-white/80 text-xs md:text-sm font-semibold">{faq.q}</span>
+                    <span id={`faq-question-${i}`} className="text-white/80 text-xs md:text-sm font-semibold">{faq.q}</span>
                     <span className="text-white/30 flex-shrink-0 mt-0.5">
                       {openFaq === i ? <Minus size={15} /> : <Plus size={15} />}
                     </span>
                   </div>
                   {openFaq === i && (
-                    <div className="mt-3 text-white/50 text-[11px] md:text-xs leading-relaxed border-t border-white/[0.04] pt-3">
+                    <div 
+                      id={`faq-answer-${i}`}
+                      role="region"
+                      aria-labelledby={`faq-question-${i}`}
+                      className="mt-3 text-white/70 text-[11px] md:text-xs leading-relaxed border-t border-white/[0.04] pt-3"
+                    >
                       {faq.a}
                     </div>
                   )}
@@ -807,7 +814,7 @@ export function LandingPage() {
             <Link href="/login"
               className="cta-btn inline-flex items-center gap-2 h-11 px-8 rounded-full text-sm font-bold transition-all hover:scale-[1.03]"
               style={{ background: "var(--blue)", color: "#fff", textDecoration: "none", boxShadow: "0 4px 20px rgba(75, 140, 248, 0.35)" }}>
-              Empezar gratis
+              Conectar cuenta
               <ArrowRight size={15} />
             </Link>
           </div>
@@ -829,7 +836,7 @@ export function LandingPage() {
             <span className="text-sm font-bold tracking-tight">MoodleSync</span>
           </Link>
           <span className="text-[10px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-            · <a href="https://onyxinc.dev" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" style={{ textDecoration: "underline" }}>by ONYX Inc.</a> · 2026 · <a href="https://github.com/AlcantarIGOR/moodlesync-saas" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" style={{ textDecoration: "underline" }}>Código Abierto</a>
+            · <a href="https://onyxinc.dev" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" style={{ textDecoration: "underline" }}>by ONYX Inc.</a> · 2026 · <a href="https://github.com/AlcantarIGOR/moodlesync" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" style={{ textDecoration: "underline" }}>Código Abierto</a>
           </span>
         </div>
         <Link href="/login" className="text-[10px] font-semibold tracking-wider uppercase text-white/50 hover:text-white transition-colors"

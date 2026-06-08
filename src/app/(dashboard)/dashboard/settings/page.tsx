@@ -12,13 +12,12 @@ export default async function SettingsPage() {
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, email: true, plan: true, moodleUsername: true, moodleUserId: true, mindboxPassword: true },
+    select: { name: true, email: true, moodleUsername: true, moodleUserId: true, mindboxPassword: true },
   })
 
   if (!user) redirect("/login")
 
   const initials = user.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
-  const isPremium = true // todos los usuarios tienen acceso completo por ahora
 
   return (
     <div className="flex flex-col h-full">
@@ -58,17 +57,6 @@ export default async function SettingsPage() {
                   {user.moodleUsername}
                 </p>
               </div>
-              <span
-                className="text-[10px] rounded px-2 py-1 shrink-0 font-semibold"
-                style={{
-                  fontFamily: "var(--mono)",
-                  background: isPremium ? "var(--blue-d)" : "var(--s3)",
-                  color: isPremium ? "var(--blue)" : "var(--tx2)",
-                  border: `1px solid ${isPremium ? "var(--blue-b)" : "var(--b1)"}`,
-                }}
-              >
-                {isPremium ? "PREMIUM" : "FREE"}
-              </span>
             </div>
           </div>
 
@@ -158,34 +146,6 @@ export default async function SettingsPage() {
               <p className="text-[11px]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
                 Para cambiar tu contraseña de Moodle, cierra sesión e inicia de nuevo.
               </p>
-            </div>
-          </div>
-
-          {/* Plan card */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
-            <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--b1)", background: "var(--s2)" }}>
-              <p className="text-[10px] uppercase tracking-[.1em]" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-                Plan actual
-              </p>
-            </div>
-            <div className="px-4 py-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold" style={{ color: "var(--tx)" }}>
-                  {isPremium ? "Premium" : "Gratuito"}
-                </p>
-                <p className="text-[11px] mt-0.5" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-                  {isPremium ? "Acceso completo a todas las funciones" : "Hasta 3 tareas manuales"}
-                </p>
-              </div>
-              {!isPremium && (
-                <a
-                  href="/dashboard/upgrade"
-                  className="h-9 px-4 rounded-lg text-xs font-semibold flex items-center"
-                  style={{ background: "var(--blue-d)", border: "1px solid var(--blue-b)", color: "var(--blue)", textDecoration: "none" }}
-                >
-                  Actualizar
-                </a>
-              )}
             </div>
           </div>
 

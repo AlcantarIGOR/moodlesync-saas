@@ -8,7 +8,6 @@ declare module "next-auth" {
   interface Session {
     moodleToken: string
     moodleUserId: number
-    plan: string
     user: {
       id: string
     } & DefaultSession["user"]
@@ -17,7 +16,6 @@ declare module "next-auth" {
   interface User {
     moodleToken?: string
     moodleUserId?: number
-    plan?: string
   }
 }
 
@@ -72,7 +70,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           moodleToken: token,
           moodleUserId: siteInfo.userid,
-          plan: user.plan,
         }
       },
     }),
@@ -83,7 +80,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.sub = user.id
         ;(token as Record<string, unknown>).moodleToken = user.moodleToken
         ;(token as Record<string, unknown>).moodleUserId = user.moodleUserId
-        ;(token as Record<string, unknown>).plan = user.plan ?? "FREE"
       }
       return token
     },
@@ -92,12 +88,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         sub?: string
         moodleToken?: string
         moodleUserId?: number
-        plan?: string
       }
       session.user.id = tok.sub ?? ""
       session.moodleToken = tok.moodleToken ?? ""
       session.moodleUserId = tok.moodleUserId ?? 0
-      session.plan = tok.plan ?? "FREE"
       return session
     },
   },

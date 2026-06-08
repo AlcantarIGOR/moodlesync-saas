@@ -13,7 +13,6 @@ model User {
   name            String
   email           String?
   mindboxPassword String?
-  plan            Plan               @default(FREE)
   createdAt       DateTime           @default(now())
   lastSeenAt      DateTime?
   tasks           Task[]
@@ -21,7 +20,6 @@ model User {
   schedule        ClassSession[]
   pushSubs        PushSubscription[]
   notes             Note[]
-  noteViewPositions NoteViewPosition[]
   ownedGroups       StudyGroup[]       @relation("GroupOwner")
   groupMemberships  StudyGroupMember[]
 }
@@ -112,28 +110,10 @@ model Note {
   x             Int                @default(100)
   y             Int                @default(100)
   pinned        Boolean            @default(false)
-  shared        Boolean            @default(false)
-  courseId      Int?
-  courseName    String?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  viewPositions NoteViewPosition[]
 
-  @@index([userId])
-  @@index([shared, courseId])
-}
-
-model NoteViewPosition {
-  id     String @id @default(cuid())
-  noteId String
-  userId String
-  x      Int    @default(100)
-  y      Int    @default(100)
-  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([noteId, userId])
   @@index([userId])
 }
 
@@ -166,11 +146,6 @@ model StudyGroupMember {
 enum GroupRole {
   OWNER
   MEMBER
-}
-
-enum Plan {
-  FREE
-  PREMIUM
 }
 
 enum TaskStatus {

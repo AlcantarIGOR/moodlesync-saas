@@ -306,7 +306,8 @@ function parseExtra(extra: string): { room: string | null; professor: string | n
 /** Shared-session variant — avoids a second login handshake */
 export async function scrapeGradesAndSchedule(
   ncontrol: string,
-  mindboxPassword: string
+  mindboxPassword: string,
+  onlyCurrent: boolean = false
 ): Promise<{ grades: MindboxGrade[]; sessions: MindboxClassSession[] }> {
   const sess = await login(ncontrol, mindboxPassword)
 
@@ -317,8 +318,13 @@ export async function scrapeGradesAndSchedule(
         headers: { Cookie: cookie, "User-Agent": "Mozilla/5.0 Chrome/124" },
       })
       const indexHtml = await indexResp.text()
-      const periods = parsePeriods(indexHtml)
+      let periods = parsePeriods(indexHtml)
       if (!periods.length) throw new Error("No se encontraron periodos en Mindbox")
+
+      if (onlyCurrent) {
+        periods = [periods[0]]
+      }
+
       const results = await Promise.allSettled(
         periods.map((p) => fetchGradesForPeriod(sess, p.value, p.name))
       )

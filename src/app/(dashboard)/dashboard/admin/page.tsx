@@ -16,7 +16,6 @@ export default async function AdminPage() {
       moodleUsername: true,
       email: true,
       mindboxPassword: true,
-      plan: true,
       createdAt: true,
       lastSeenAt: true,
       _count: {

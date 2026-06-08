@@ -26,8 +26,13 @@ export async function POST() {
   const plainPassword = decryptPassword(user.mindboxPassword)
 
   try {
-    // Single login — grades + schedule scraped sharing one session
-    const { grades, sessions } = await scrapeGradesAndSchedule(ncontrol, plainPassword)
+    const existingGrades = await db.grade.count({
+      where: { userId: session.user.id },
+    })
+    const onlyCurrent = existingGrades > 0
+
+    // Single login — grades + schedule scraped sharing one session (onlyCurrent skips old history if we already have data)
+    const { grades, sessions } = await scrapeGradesAndSchedule(ncontrol, plainPassword, onlyCurrent)
 
     // Upsert grades in parallel (eliminates N+1 sequential awaits)
     await Promise.all(grades.map((g) => db.grade.upsert({

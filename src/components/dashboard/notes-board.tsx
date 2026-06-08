@@ -10,26 +10,8 @@ import gsap from "gsap"
 
 type NoteColor = "yellow" | "blue" | "green" | "pink" | "purple"
 
-export type SharedNote = {
-  id: string
-  userId: string
-  content: string
-  color: string
-  pinned: boolean
-  courseId: number | null
-  courseName: string | null
-  createdAt: string
-  updatedAt: string
-  authorName: string
-  viewX: number | null
-  viewY: number | null
-}
-
-type SharedNoteLocal = SharedNote & { localX: number; localY: number }
-
-type Course = { id: number; name: string }
-
 // ---------------------------------------------------------------------------
+
 // Color palette
 // ---------------------------------------------------------------------------
 
@@ -72,7 +54,6 @@ function NoteCard({
   onColorChange,
   onDelete,
   onPinToggle,
-  onShareClick,
   zIndex,
   onFocus,
 }: {
@@ -82,13 +63,11 @@ function NoteCard({
   onColorChange: (id: string, color: NoteColor) => void
   onDelete: (id: string) => void
   onPinToggle: (id: string, pinned: boolean) => void
-  onShareClick: (id: string, currentCourseId: number | null) => void
   zIndex: number
   onFocus: (id: string) => void
 }) {
   const color = COLORS[(note.color as NoteColor) ?? "yellow"] ?? COLORS.yellow
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const isShared = (note as Note & { shared?: boolean }).shared === true
 
   useEffect(() => {
     const el = textareaRef.current
@@ -143,35 +122,6 @@ function NoteCard({
 
         <div style={{ flex: 1 }} />
 
-        {/* Share indicator */}
-        {isShared && (
-          <span style={{
-            fontSize: 9, fontFamily: "var(--mono)", color: color.dot,
-            background: `${color.bg}`, border: `1px solid ${color.border}`,
-            borderRadius: 4, padding: "1px 4px", letterSpacing: ".3px",
-          }}>
-            compartida
-          </span>
-        )}
-
-        {/* Share button */}
-        <button
-          onClick={() => onShareClick(note.id, (note as Note & { courseId?: number | null }).courseId ?? null)}
-          style={{
-            color: isShared ? color.dot : "var(--tx3)",
-            background: "none", border: "none", cursor: "pointer",
-            padding: "2px", display: "flex", alignItems: "center",
-          }}
-          title={isShared ? "Cambiar / dejar de compartir" : "Compartir con una materia"}
-        >
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-            <circle cx="9.5" cy="2.5" r="1.5" stroke="currentColor" strokeWidth="1.4"/>
-            <circle cx="9.5" cy="9.5" r="1.5" stroke="currentColor" strokeWidth="1.4"/>
-            <circle cx="2.5" cy="6"   r="1.5" stroke="currentColor" strokeWidth="1.4"/>
-            <path d="M4 5.3L8 3M4 6.7L8 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-          </svg>
-        </button>
-
         {/* Pin button */}
         <button
           onClick={() => onPinToggle(note.id, !note.pinned)}
@@ -220,171 +170,6 @@ function NoteCard({
 }
 
 // ---------------------------------------------------------------------------
-// SharedNoteCard (readonly — viewer only drags)
-// ---------------------------------------------------------------------------
-
-function SharedNoteCard({
-  note,
-  onPointerDown,
-  zIndex,
-  onFocus,
-}: {
-  note: SharedNoteLocal
-  onPointerDown: (e: React.PointerEvent<HTMLDivElement>, id: string) => void
-  zIndex: number
-  onFocus: (id: string) => void
-}) {
-  const color = COLORS[(note.color as NoteColor) ?? "yellow"] ?? COLORS.yellow
-
-  return (
-    <div
-      id={`shared-${note.id}`}
-      style={{
-        position: "absolute",
-        left: note.localX,
-        top: note.localY,
-        width: 220,
-        zIndex,
-        background: color.bg,
-        border: `1px solid ${color.border}`,
-        borderRadius: 12,
-        boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-        userSelect: "none",
-        willChange: "transform",
-      }}
-      onPointerDown={(e) => {
-        const target = e.target as HTMLElement
-        if (target.closest("button")) return
-        onPointerDown(e, note.id)
-        onFocus(note.id)
-      }}
-    >
-      {/* Header con autor */}
-      <div
-        className="flex items-center gap-1.5 px-2.5 pt-2.5 pb-1.5 cursor-grab active:cursor-grabbing"
-        style={{ touchAction: "none" }}
-      >
-        <span style={{
-          fontSize: 10, fontFamily: "var(--mono)", color: color.text,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          maxWidth: 120,
-        }}>
-          {note.authorName}
-        </span>
-        <div style={{ flex: 1 }} />
-        <span style={{
-          fontSize: 9, fontFamily: "var(--mono)", color: "var(--tx3)",
-          border: "1px solid var(--b2)", borderRadius: 4, padding: "1px 4px",
-        }}>
-          {note.courseName ?? ""}
-        </span>
-      </div>
-
-      {/* Content readonly */}
-      <div style={{
-        padding: "0 12px 12px",
-        fontFamily: "var(--sans)", fontSize: 13, lineHeight: 1.55,
-        color: "var(--tx)", minHeight: 72, whiteSpace: "pre-wrap",
-        wordBreak: "break-word",
-      }}>
-        {note.content || <span style={{ color: "var(--tx3)", fontStyle: "italic" }}>Sin contenido</span>}
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// ShareModal
-// ---------------------------------------------------------------------------
-
-function ShareModal({
-  noteId,
-  currentCourseId,
-  courses,
-  onConfirm,
-  onCancel,
-}: {
-  noteId: string
-  currentCourseId: number | null
-  courses: Course[]
-  onConfirm: (noteId: string, course: Course | null) => void
-  onCancel: () => void
-}) {
-  return (
-    <div
-      style={{
-        position: "fixed", inset: 0, zIndex: 99999,
-        background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}
-      onClick={(e) => { if (e.target === e.currentTarget) onCancel() }}
-    >
-      <div style={{
-        background: "var(--s1)", border: "1px solid var(--b1)", borderRadius: 16,
-        padding: 24, width: 320, boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-      }}>
-        <p style={{ margin: "0 0 4px", fontWeight: 600, fontSize: 15, color: "var(--tx)" }}>
-          Compartir nota
-        </p>
-        <p style={{ margin: "0 0 16px", fontSize: 12, color: "var(--tx2)" }}>
-          Todos los compañeros de la materia podrán verla.
-        </p>
-
-        {courses.length === 0 ? (
-          <p style={{ fontSize: 12, color: "var(--tx3)" }}>
-            Sincroniza tus tareas primero para ver tus materias.
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-            {courses.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => onConfirm(noteId, c)}
-                style={{
-                  padding: "10px 14px", borderRadius: 10, cursor: "pointer",
-                  background: currentCourseId === c.id ? "rgba(75,140,248,0.15)" : "var(--s2)",
-                  border: currentCourseId === c.id ? "1px solid rgba(75,140,248,0.5)" : "1px solid var(--b1)",
-                  color: currentCourseId === c.id ? "var(--blue)" : "var(--tx)",
-                  fontSize: 13, textAlign: "left", fontFamily: "var(--sans)",
-                  transition: "background .15s, border .15s",
-                }}
-              >
-                {currentCourseId === c.id ? "✓ " : ""}{c.name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          {currentCourseId !== null && (
-            <button
-              onClick={() => onConfirm(noteId, null)}
-              style={{
-                padding: "8px 14px", borderRadius: 8, cursor: "pointer",
-                background: "transparent", border: "1px solid var(--b2)",
-                color: "var(--tx2)", fontSize: 12, fontFamily: "var(--sans)",
-              }}
-            >
-              Dejar de compartir
-            </button>
-          )}
-          <button
-            onClick={onCancel}
-            style={{
-              padding: "8px 14px", borderRadius: 8, cursor: "pointer",
-              background: "var(--s2)", border: "1px solid var(--b1)",
-              color: "var(--tx)", fontSize: 12, fontFamily: "var(--sans)",
-            }}
-          >
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // Canvas background (reutilizable)
 // ---------------------------------------------------------------------------
 
@@ -400,27 +185,13 @@ const CANVAS_BG = `
 
 export function NotesBoard({
   initialNotes,
-  initialSharedNotes,
-  courses,
   userId,
 }: {
   initialNotes: Note[]
-  initialSharedNotes: SharedNote[]
-  courses: Course[]
   userId: string
 }) {
-  const [tab, setTab] = useState<"mine" | "shared">("mine")
   const [notes, setNotes] = useState<Note[]>(initialNotes)
-  const [sharedNotes, setSharedNotes] = useState<SharedNoteLocal[]>(() =>
-    initialSharedNotes.map((n, i) => ({
-      ...n,
-      localX: n.viewX ?? spreadPosition(i).x,
-      localY: n.viewY ?? spreadPosition(i).y,
-    }))
-  )
   const [zOrder, setZOrder] = useState<string[]>(() => initialNotes.map((n) => n.id))
-  const [sharedZOrder, setSharedZOrder] = useState<string[]>(() => initialSharedNotes.map((n) => n.id))
-  const [shareModal, setShareModal] = useState<{ noteId: string; currentCourseId: number | null } | null>(null)
 
   const boardRef = useRef<HTMLDivElement>(null)
   const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
@@ -428,7 +199,6 @@ export function NotesBoard({
 
   // Drag state
   const draggingId = useRef<string | null>(null)
-  const draggingIsShared = useRef(false)
   const dragNodeRef = useRef<HTMLElement | null>(null)
   const offsetX = useRef(0)
   const offsetY = useRef(0)
@@ -444,21 +214,18 @@ export function NotesBoard({
   }, [])
 
   const startDrag = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>, id: string, isShared: boolean) => {
+    (e: React.PointerEvent<HTMLDivElement>, id: string) => {
       if (e.button !== 0 && e.pointerType === "mouse") return
       e.preventDefault()
       e.stopPropagation()
 
-      const prefix = isShared ? "shared-" : "note-"
-      const noteEl = document.getElementById(`${prefix}${id}`)
+      const noteEl = document.getElementById(`note-${id}`)
       if (!noteEl) return
 
       draggingId.current = id
-      draggingIsShared.current = isShared
       dragNodeRef.current = noteEl
 
       const rect = noteEl.getBoundingClientRect()
-      const board = boardRef.current?.getBoundingClientRect()
       offsetX.current = e.clientX - rect.left
       offsetY.current = e.clientY - rect.top
 
@@ -483,7 +250,6 @@ export function NotesBoard({
 
       onDocUp.current = (ev: PointerEvent) => {
         const dragId = draggingId.current
-        const dragShared = draggingIsShared.current
         if (!dragId || !dragNodeRef.current || !boardRef.current) { endDrag(); return }
 
         const boardRect = boardRef.current.getBoundingClientRect()
@@ -500,31 +266,17 @@ export function NotesBoard({
         dragNodeRef.current.style.zIndex = ""
         endDrag()
 
-        if (dragShared) {
-          setSharedNotes((prev) =>
-            prev.map((n) => (n.id === dragId ? { ...n, localX: x, localY: y } : n))
-          )
-          clearTimeout(saveTimers.current[`s-${dragId}`])
-          saveTimers.current[`s-${dragId}`] = setTimeout(() => {
-            fetch(`/api/notes/${dragId}/position`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ x, y }),
-            }).catch(() => {})
-          }, 400)
-        } else {
-          setNotes((prev) =>
-            prev.map((n) => (n.id === dragId ? { ...n, x, y } : n))
-          )
-          clearTimeout(saveTimers.current[dragId])
-          saveTimers.current[dragId] = setTimeout(() => {
-            fetch(`/api/notes/${dragId}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ x, y }),
-            }).catch(() => {})
-          }, 400)
-        }
+        setNotes((prev) =>
+          prev.map((n) => (n.id === dragId ? { ...n, x, y } : n))
+        )
+        clearTimeout(saveTimers.current[dragId])
+        saveTimers.current[dragId] = setTimeout(() => {
+          fetch(`/api/notes/${dragId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ x, y }),
+          }).catch(() => {})
+        }, 400)
       }
 
       document.addEventListener("pointermove", onDocMove.current)
@@ -535,19 +287,12 @@ export function NotesBoard({
   )
 
   const handlePointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>, id: string) => startDrag(e, id, false),
-    [startDrag]
-  )
-  const handleSharedPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>, id: string) => startDrag(e, id, true),
+    (e: React.PointerEvent<HTMLDivElement>, id: string) => startDrag(e, id),
     [startDrag]
   )
 
   const handleFocus = useCallback((id: string) => {
     setZOrder((prev) => prev[prev.length - 1] === id ? prev : [...prev.filter((i) => i !== id), id])
-  }, [])
-  const handleSharedFocus = useCallback((id: string) => {
-    setSharedZOrder((prev) => prev[prev.length - 1] === id ? prev : [...prev.filter((i) => i !== id), id])
   }, [])
 
   const handleContentChange = useCallback((id: string, content: string) => {
@@ -621,53 +366,6 @@ export function NotesBoard({
     })
   }, [])
 
-  // Share / unshare
-  const handleShareClick = useCallback((noteId: string, currentCourseId: number | null) => {
-    setShareModal({ noteId, currentCourseId })
-  }, [])
-
-  const handleShareConfirm = useCallback(async (noteId: string, course: Course | null) => {
-    setShareModal(null)
-    const body = course
-      ? { shared: true, courseId: course.id, courseName: course.name }
-      : { shared: false }
-
-    await fetch(`/api/notes/${noteId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }).catch(() => {})
-
-    setNotes((prev) =>
-      prev.map((n) =>
-        n.id === noteId
-          ? { ...n, ...(course
-              ? { shared: true, courseId: course.id, courseName: course.name }
-              : { shared: false, courseId: null, courseName: null }) }
-          : n
-      )
-    )
-  }, [])
-
-  // Poll shared notes every 30s while on shared tab
-  useEffect(() => {
-    if (tab !== "shared") return
-    const poll = setInterval(async () => {
-      const res = await fetch("/api/notes/shared").catch(() => null)
-      if (!res?.ok) return
-      const data: SharedNote[] = await res.json()
-      setSharedNotes((prev) => {
-        const posMap = new Map(prev.map((n) => [n.id, { localX: n.localX, localY: n.localY }]))
-        return data.map((note, i) => ({
-          ...note,
-          localX: posMap.get(note.id)?.localX ?? note.viewX ?? spreadPosition(i).x,
-          localY: posMap.get(note.id)?.localY ?? note.viewY ?? spreadPosition(i).y,
-        }))
-      })
-    }, 30_000)
-    return () => clearInterval(poll)
-  }, [tab])
-
   // Cleanup drag listeners on unmount
   useEffect(() => {
     return () => {
@@ -677,44 +375,8 @@ export function NotesBoard({
     }
   }, [])
 
-  const sharedCount = sharedNotes.length
-
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-
-      {/* Tabs */}
-      <div style={{
-        display: "flex", gap: 4, padding: "8px 16px",
-        borderBottom: "1px solid var(--b1)", background: "var(--bg-glass-soft)", flexShrink: 0,
-      }}>
-        {(["mine", "shared"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            style={{
-              padding: "5px 14px", borderRadius: 8, fontSize: 12, cursor: "pointer",
-              fontFamily: "var(--sans)", border: "none",
-              background: tab === t ? "var(--blue)" : "transparent",
-              color: tab === t ? "#fff" : "var(--tx2)",
-              fontWeight: tab === t ? 600 : 400,
-              transition: "background .15s, color .15s",
-            }}
-          >
-            {t === "mine" ? "Mis notas" : (
-              <>Compartidas{sharedCount > 0 && (
-                <span style={{
-                  marginLeft: 6, background: "rgba(75,140,248,0.25)",
-                  color: "var(--blue)", borderRadius: 10, padding: "1px 6px",
-                  fontSize: 10, fontWeight: 700,
-                }}>
-                  {sharedCount}
-                </span>
-              )}</>
-            )}
-          </button>
-        ))}
-      </div>
-
       {/* Canvas area */}
       <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
         <div ref={boardRef} style={{ position: "absolute", inset: 0, overflow: "auto" }}>
@@ -724,82 +386,45 @@ export function NotesBoard({
             height: "max(100%, 1600px)",
             background: CANVAS_BG,
           }}>
-
-            {/* Personal notes canvas */}
-            {tab === "mine" && (
-              <>
-                {notes.map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    onPointerDown={handlePointerDown}
-                    onContentChange={handleContentChange}
-                    onColorChange={handleColorChange}
-                    onDelete={handleDelete}
-                    onPinToggle={handlePinToggle}
-                    onShareClick={handleShareClick}
-                    zIndex={zOrder.indexOf(note.id) + 1}
-                    onFocus={handleFocus}
-                  />
-                ))}
-                {notes.length === 0 && <EmptyCanvas text="Sin notas — crea una con el botón +" />}
-              </>
-            )}
-
-            {/* Shared notes canvas */}
-            {tab === "shared" && (
-              <>
-                {sharedNotes.map((note) => (
-                  <SharedNoteCard
-                    key={note.id}
-                    note={note}
-                    onPointerDown={handleSharedPointerDown}
-                    zIndex={sharedZOrder.indexOf(note.id) + 1}
-                    onFocus={handleSharedFocus}
-                  />
-                ))}
-                {sharedNotes.length === 0 && (
-                  <EmptyCanvas text="Ningún compañero ha compartido notas contigo aún" />
-                )}
-              </>
-            )}
+            {notes.map((note) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                onPointerDown={handlePointerDown}
+                onContentChange={handleContentChange}
+                onColorChange={handleColorChange}
+                onDelete={handleDelete}
+                onPinToggle={handlePinToggle}
+                zIndex={zOrder.indexOf(note.id) + 1}
+                onFocus={handleFocus}
+              />
+            ))}
+            {notes.length === 0 && <EmptyCanvas text="Sin notas — crea una con el botón +" />}
           </div>
         </div>
 
-        {/* FAB — solo en tab mine */}
-        {tab === "mine" && (
-          <button
-            onClick={handleCreate}
-            style={{
-              position: "absolute", bottom: 24, right: 24,
-              width: 48, height: 48, borderRadius: "50%",
-              background: "var(--blue)", border: "none", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 4px 20px rgba(75,140,248,0.4)",
-              zIndex: 10000, transition: "transform .15s, box-shadow .15s",
-              color: "#fff",
-            }}
-            title="Nueva nota"
-            onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.transform = "scale(1.1)"; el.style.boxShadow = "0 6px 28px rgba(75,140,248,0.55)" }}
-            onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.transform = ""; el.style.boxShadow = "0 4px 20px rgba(75,140,248,0.4)" }}
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </button>
-        )}
+        {/* FAB */}
+        <button
+          onClick={handleCreate}
+          style={{
+            position: "absolute", bottom: 24, right: 24,
+            width: 48, height: 48, borderRadius: "50%",
+            background: "var(--blue)", border: "none", cursor: "pointer",
+            display: "flex",
+            alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 20px rgba(75,140,248,0.4)",
+            zIndex: 10000, transition: "transform .15s, box-shadow .15s",
+            color: "#fff",
+          }}
+          title="Nueva nota"
+          onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.transform = "scale(1.1)"; el.style.boxShadow = "0 6px 28px rgba(75,140,248,0.55)" }}
+          onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.transform = ""; el.style.boxShadow = "0 4px 20px rgba(75,140,248,0.4)" }}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
       </div>
-
-      {/* Share modal */}
-      {shareModal && (
-        <ShareModal
-          noteId={shareModal.noteId}
-          currentCourseId={shareModal.currentCourseId}
-          courses={courses}
-          onConfirm={handleShareConfirm}
-          onCancel={() => setShareModal(null)}
-        />
-      )}
     </div>
   )
 }

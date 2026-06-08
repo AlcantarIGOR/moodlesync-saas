@@ -48,8 +48,8 @@ Gestor de tareas y calificaciones para estudiantes del **TecNM Ciudad Guzman (IT
 Requiere **Node 22+**, **PostgreSQL** (recomendado: Supabase) y un **token de Moodle** del ITCG.
 
 ```bash
-git clone https://github.com/AlcantarIGOR/moodlesync-saas.git
-cd moodlesync-saas
+git clone https://github.com/AlcantarIGOR/moodlesync.git
+cd moodlesync
 npm install
 npx prisma generate
 npx prisma migrate dev

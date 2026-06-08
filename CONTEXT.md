@@ -1,4 +1,4 @@
-# MoodleSync SaaS — Estado del Proyecto
+# MoodleSync — Estado del Proyecto
 
 > Pega este archivo al inicio de cualquier conversación con Claude para continuar el desarrollo con contexto completo.
 
@@ -12,15 +12,15 @@
 
 | | |
 |---|---|
-| **Producción** | https://moodlesync-saas.vercel.app |
-| **Repo GitHub** | https://github.com/AlcantarIGOR/moodlesync-saas |
+| **Producción** | https://moodlesync.onyxinc.dev |
+| **Repo GitHub** | https://github.com/AlcantarIGOR/moodlesync |
 | **DB (Supabase)** | `aws-1-us-east-1.pooler.supabase.com` — proyecto `ljdyoplhxyxavydjgnds` |
 
 ---
 
 ## Qué es MoodleSync
 
-App SaaS para estudiantes del ITCG (TecNM Ciudad Guzmán). Se conecta al portal Moodle del instituto y centraliza tareas, calificaciones y horario en un dashboard. Autenticación con las mismas credenciales del portal — sin registro extra.
+App web para estudiantes del ITCG (TecNM Ciudad Guzmán). Se conecta al portal Moodle del instituto y centraliza tareas, calificaciones y horario en un dashboard. Autenticación con las mismas credenciales del portal — sin registro extra.
 
 ---
 
@@ -80,8 +80,7 @@ src/
 │   │       ├── calificaciones/ Notas por materia
 │   │       ├── calendario/     Vista semanal de entregas
 │   │       ├── focus/          Pomodoro timer
-│   │       ├── settings/       Config (email, Mindbox, Push)
-│   │       └── upgrade/        Plan Premium (placeholder)
+│   │       └── settings/       Config (email, Mindbox, Push)
 │   ├── api/
 │   │   ├── auth/[...nextauth]/ next-auth handlers
 │   │   ├── cron/reminders/     Email + Push recordatorios (cron diario)
@@ -119,7 +118,7 @@ public/
 ## Schema Prisma (resumen de modelos)
 
 ```prisma
-User             id, moodleUsername, moodleUserId, name, email, plan, mindboxPassword(enc)
+User             id, moodleUsername, moodleUserId, name, email, mindboxPassword(enc)
 Task             id, userId, title, courseName, dueDate, status, cmid, description, attachments
 Grade            userId, period, subjectCode, subjectName, finalGrade, partialGrades[]
 ClassSession     userId, dayOfWeek, subjectName, startTime, endTime, room, professor, group
@@ -135,7 +134,7 @@ DATABASE_URL=                   # Supabase pooler :6543 ?pgbouncer=true
 DIRECT_URL=                     # Supabase direct :5432 (solo prisma migrate)
 MOODLE_BASE_URL=                # https://apps.cdguzman.tecnm.mx/itcg
 AUTH_SECRET=                    # next-auth secret
-NEXTAUTH_URL=                   # https://moodlesync-saas.vercel.app
+NEXTAUTH_URL=                   # https://moodlesync.onyxinc.dev
 RESEND_API_KEY=                 # API key Resend
 RESEND_FROM_EMAIL=              # "MoodleSync <onboarding@resend.dev>"
 CRON_SECRET=                    # Token para /api/cron/reminders
@@ -179,6 +178,4 @@ MINDBOX_ENCRYPTION_KEY=         # 64 chars hex (AES-256)
 - [ ] Conectar GitHub → Vercel para deploy automático en push
 - [ ] Dominio personalizado `moodlesync.app`
 - [ ] Verificar dominio en Resend (`recordatorios@moodlesync.app`)
-- [ ] Plan Premium — integrar Mercado Pago
 - [ ] Onboarding wizard al primer login
-- [ ] Multi-institución (más allá de ITCG)

@@ -85,10 +85,14 @@ const SEM_KW: Record<number, string[]> = {
 
 /** Detecta el semestre de un curso por su nombre. Retorna 0 si no se puede determinar. */
 export function detectSem(courseName: string): number {
-  const lower = courseName.toLowerCase()
+  const normalized = courseName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
   for (const [sem, keywords] of Object.entries(SEM_KW)) {
     for (const kw of keywords) {
-      if (lower.includes(kw)) return parseInt(sem)
+      const normKw = kw.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      if (normalized.includes(normKw)) return parseInt(sem)
     }
   }
   return 0

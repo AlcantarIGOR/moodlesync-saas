@@ -16,10 +16,29 @@ export async function syncUserTasks(
   const courseIds = visibleCourses.map((c) => c.id)
   const courseMap = new Map(visibleCourses.map((c) => [c.id, c.fullname]))
 
-  // Fetch assignments first, then submission statuses in parallel per assignment
+  // Fetch assignments first, then submission statuses in parallel per assignment (filtering out tasks already marked as DONE)
   const assignments = await getCourseAssignments(moodleToken, courseIds)
   const assignmentIds = assignments.map((a) => a.id)
-  const submissionMap = await getSubmissionStatuses(moodleToken, assignmentIds, moodleUserId)
+
+  const doneTasks = await db.task.findMany({
+    where: {
+      userId,
+      moodleAssignmentId: { in: assignmentIds },
+      status: "DONE",
+    },
+    select: {
+      moodleAssignmentId: true,
+    },
+  })
+
+  const doneAssignmentIds = new Set(
+    doneTasks
+      .map((t) => t.moodleAssignmentId)
+      .filter((id): id is number => id !== null)
+  )
+
+  const idsToCheck = assignmentIds.filter((id) => !doneAssignmentIds.has(id))
+  const submissionMap = await getSubmissionStatuses(moodleToken, idsToCheck, moodleUserId)
 
   const normalized = assignments.map((assignment) => {
     const courseName = courseMap.get(assignment.course) ?? null
@@ -44,7 +63,7 @@ export async function syncUserTasks(
       dueDate: assignment.duedate > 0 ? new Date(assignment.duedate * 1000) : null,
       description: assignment.intro || null, // stored as raw HTML, sanitized on render
       attachments: attachments.length > 0 ? attachments : null,
-      submitted: submissionMap.get(assignment.id) ?? false,
+      submitted: doneAssignmentIds.has(assignment.id) || (submissionMap.get(assignment.id) ?? false),
     }
   })
 

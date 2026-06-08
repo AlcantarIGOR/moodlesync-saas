@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "MoodleSync — by ONYX Inc.",
-  description: "Sincroniza tus tareas del portal ITCG. by ONYX Inc.",
+  title: "MoodleSync — Portal de Organización Académica del ITCG",
+  description: "Sincroniza tus tareas de Moodle, consulta calificaciones y tu horario de clases en el ITCG de forma independiente y gratuita. by ONYX Inc.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

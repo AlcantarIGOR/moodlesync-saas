@@ -22,15 +22,6 @@ export async function PATCH(
   if (typeof body.x === "number") data.x = Math.max(0, Math.round(body.x))
   if (typeof body.y === "number") data.y = Math.max(0, Math.round(body.y))
   if (typeof body.pinned === "boolean") data.pinned = body.pinned
-  if (typeof body.shared === "boolean") {
-    data.shared = body.shared
-    if (!body.shared) {
-      data.courseId = null
-      data.courseName = null
-    }
-  }
-  if (typeof body.courseId === "number") data.courseId = body.courseId
-  if (typeof body.courseName === "string") data.courseName = body.courseName.slice(0, 120)
 
   const note = await db.note.updateMany({
     where: { id, userId: session.user.id },
