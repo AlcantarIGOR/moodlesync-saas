@@ -1,6 +1,7 @@
 import NextAuth, { type DefaultSession } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { db } from "@/lib/db"
+import { getAuthSecret } from "@/lib/env"
 import { getMoodleToken, mCall } from "@/lib/moodle"
 import type { MoodleSiteInfo } from "@/types"
 
@@ -20,6 +21,7 @@ declare module "next-auth" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: getAuthSecret(),
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",

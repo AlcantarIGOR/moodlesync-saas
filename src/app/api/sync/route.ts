@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { syncUserTasks } from "@/lib/sync"
 
 export async function POST() {
+  const startedAt = Date.now()
   const session = await auth()
 
   if (!session?.user?.id || !session.moodleToken) {
@@ -19,10 +20,11 @@ export async function POST() {
       session.moodleToken,
       session.moodleUserId
     )
+    console.log(`[api/sync] userId=${session.user.id} synced=${synced} duration_ms=${Date.now() - startedAt}`)
     return NextResponse.json({ synced })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown sync error"
-    console.error("[sync] syncUserTasks failed:", message)
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error(`[api/sync] userId=${session.user.id} status=error duration_ms=${Date.now() - startedAt} message=${message}`)
+    return NextResponse.json({ error: "Sync failed" }, { status: 500 })
   }
 }
