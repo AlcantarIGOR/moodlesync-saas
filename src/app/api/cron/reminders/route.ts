@@ -8,10 +8,17 @@ import { sendPush } from "@/lib/push"
 // Schedule: 14:00 UTC = 08:00 CST (hora de México)
 
 export async function GET(req: Request) {
+  const startedAt = Date.now()
   const secret = process.env.CRON_SECRET
-  const isDev  = process.env.NODE_ENV === "development"
+  const isDev = process.env.NODE_ENV === "development"
+
   if (!isDev) {
-    if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
+    if (!secret) {
+      console.error("[cron/reminders] Missing CRON_SECRET in production")
+      return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 })
+    }
+    const authHeader = req.headers.get("authorization")
+    if (!authHeader || !authHeader.startsWith("Bearer ") || authHeader.slice(7) !== secret) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
   }
@@ -19,7 +26,7 @@ export async function GET(req: Request) {
   // Find tasks due in the next 24-26h that are still PENDING
   const now = new Date()
   const windowStart = new Date(now.getTime() + 23 * 3600 * 1000)   // 23h from now
-  const windowEnd   = new Date(now.getTime() + 26 * 3600 * 1000)   // 26h from now
+  const windowEnd = new Date(now.getTime() + 26 * 3600 * 1000)      // 26h from now
 
   const tasks = await db.task.findMany({
     where: {
@@ -109,7 +116,9 @@ export async function GET(req: Request) {
     })
   }
 
-  console.log(`[cron/reminders] email sent=${sent} skipped=${skipped} push=${pushSent} window=${windowStart.toISOString()}–${windowEnd.toISOString()}`)
+  console.log(
+    `[cron/reminders] sent=${sent} skipped=${skipped} push=${pushSent} users=${byUser.size} tasks=${tasks.length} duration_ms=${Date.now() - startedAt} window=${windowStart.toISOString()}–${windowEnd.toISOString()}`
+  )
 
   return NextResponse.json({ sent, skipped, pushSent, users: byUser.size })
 }

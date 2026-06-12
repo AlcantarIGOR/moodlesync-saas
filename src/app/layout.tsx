@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Outfit, JetBrains_Mono } from "next/font/google"
 import Script from "next/script"
 import { ThemeProvider } from "@/components/theme-provider"
+import { validateRequiredEnv } from "@/lib/env"
 import "./globals.css"
 
 const outfit = Outfit({
@@ -50,6 +51,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  validateRequiredEnv()
+
   return (
     <html lang="es" className={`h-full ${outfit.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>

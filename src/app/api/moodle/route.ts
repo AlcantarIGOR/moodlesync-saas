@@ -3,6 +3,7 @@ import { mCall } from "@/lib/moodle"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
+  const startedAt = Date.now()
   const session = await auth()
 
   if (!session?.moodleToken) {
@@ -37,9 +38,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const data = await mCall(session.moodleToken, wsfunction, params)
+    console.log(`[api/moodle] wsfunction=${wsfunction} status=ok duration_ms=${Date.now() - startedAt}`)
     return NextResponse.json(data)
   } catch (error) {
     const message = error instanceof Error ? error.message : "Moodle error"
-    return NextResponse.json({ error: message }, { status: 502 })
+    console.error(`[api/moodle] wsfunction=${wsfunction} status=error duration_ms=${Date.now() - startedAt} message=${message}`)
+    return NextResponse.json({ error: "Upstream service error" }, { status: 502 })
   }
 }

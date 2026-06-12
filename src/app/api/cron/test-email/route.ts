@@ -9,6 +9,11 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+  const isDev = process.env.NODE_ENV === "development"
+  const isAdmin = !!process.env.ADMIN_USER_ID && session.user.id === process.env.ADMIN_USER_ID
+  if (!isDev && !isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
@@ -50,9 +55,7 @@ export async function GET() {
   const ok = await sendReminderEmail(user.email, user.name, tasks)
 
   if (!ok) {
-    return NextResponse.json({
-      error: "Falló el envío — revisa los logs del servidor (terminal del dev server) para ver el error exacto de Resend",
-    }, { status: 500 })
+    return NextResponse.json({ error: "Email delivery failed" }, { status: 500 })
   }
 
   return NextResponse.json({

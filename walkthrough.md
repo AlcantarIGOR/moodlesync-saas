@@ -59,3 +59,46 @@ Finalizing page optimization...
 ```
 
 Todas las rutas dinámicas y estáticas se generaron correctamente y sin errores de TypeScript.
+
+---
+
+## Remediación Operativa P0/P1/P2 (Runbook + Hardening + Observabilidad)
+
+### Runbook de Producción (Vercel)
+
+1. **Configurar secretos críticos**
+   - `AUTH_SECRET` (preferido) y `NEXTAUTH_SECRET` (compatibilidad).
+   - `MINDBOX_ENCRYPTION_KEY` (64 hex chars, AES-256-GCM).
+   - `CRON_SECRET`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`.
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
+2. **Configurar admin**
+   - Obtener `User.id` (cuid) del usuario administrador.
+   - Definir `ADMIN_USER_ID` en Vercel.
+   - Verificar acceso a `/dashboard/admin` con ese usuario.
+3. **Dominio final y auth**
+   - Confirmar dominio de producción final.
+   - Asegurar `NEXTAUTH_URL` apuntando al dominio final.
+4. **Resend**
+   - Verificar dominio en Resend (SPF/DKIM).
+   - Definir `RESEND_FROM_EMAIL` con dominio verificado.
+5. **Checklist post-deploy**
+   - Login correcto.
+   - Sync Moodle correcto.
+   - `/api/cron/reminders` responde `401` sin bearer válido en producción.
+   - `/api/cron/test-email` responde `403` para usuario no admin en producción.
+   - Envío de recordatorios (email/push) operativo.
+
+### Checklist de Hardening Recurrente
+
+- Revisar dependencias y advisories (`npm audit`, GH alerts).
+- Revisar secretos y rotación de claves (`AUTH_SECRET`, `CRON_SECRET`, `MINDBOX_ENCRYPTION_KEY`, VAPID, Resend).
+- Verificar protección de endpoints sensibles (cron/admin/proxies).
+- Validar que CI continúe ejecutando `lint`, `test:run`, `type-check`, `build`.
+- Confirmar que errores API no expongan detalles sensibles en payloads.
+
+### Observabilidad Básica (mínimo recomendado)
+
+- Registrar métricas de sync: `userId`, `synced`, `duration_ms`, `status`.
+- Registrar métricas de cron: `sent`, `skipped`, `push`, `users`, `tasks`, `duration_ms`.
+- Mantener logs de fallos upstream sanitizados (sin secretos/tokens).
+- Monitorear volumen de errores por endpoint crítico: `/api/moodle`, `/api/sync`, `/api/cron/reminders`.
