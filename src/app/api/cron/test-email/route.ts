@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { sendReminderEmail } from "@/lib/email"
 
 // Solo para desarrollo — prueba el sistema de email con datos reales del usuario
-export async function GET() {
+export async function POST() {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

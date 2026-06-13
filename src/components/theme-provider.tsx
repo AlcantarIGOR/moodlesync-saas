@@ -15,8 +15,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem("ms-theme") as Theme | null
     const initial = saved ?? "dark"
-    setTheme(initial)
-    if (initial === "light") document.documentElement.classList.add("light")
+    if (initial === "light") {
+      document.documentElement.classList.add("light")
+      setTimeout(() => {
+        setTheme("light")
+      }, 0)
+    }
   }, [])
 
   const toggle = () => {

@@ -17,8 +17,14 @@ export async function GET(req: Request) {
   }
 
   // Only allow proxying URLs from the configured Moodle instance
-  if (!fileUrl.startsWith(MOODLE_BASE)) {
-    return NextResponse.json({ error: "Invalid URL" }, { status: 400 })
+  try {
+    const parsedFileUrl = new URL(fileUrl)
+    const parsedBaseUrl = new URL(MOODLE_BASE)
+    if (parsedFileUrl.protocol !== parsedBaseUrl.protocol || parsedFileUrl.host !== parsedBaseUrl.host) {
+      return NextResponse.json({ error: "Invalid URL" }, { status: 400 })
+    }
+  } catch {
+    return NextResponse.json({ error: "Invalid URL format" }, { status: 400 })
   }
 
   const fullUrl = `${fileUrl}?token=${session.moodleToken}`

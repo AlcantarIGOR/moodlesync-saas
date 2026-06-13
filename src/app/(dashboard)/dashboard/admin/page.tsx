@@ -8,7 +8,7 @@ export default async function AdminPage() {
   if (!session?.user?.id) redirect("/login")
   if (session.user.id !== process.env.ADMIN_USER_ID) redirect("/dashboard")
 
-  const users = await db.user.findMany({
+  const dbUsers = await db.user.findMany({
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -33,18 +33,9 @@ export default async function AdminPage() {
   const now = new Date()
   const DAY = 1000 * 60 * 60 * 24
 
-  function relativeTime(date: Date | null): string {
-    if (!date) return "—"
-    const diff = now.getTime() - date.getTime()
-    if (diff < 60_000) return "ahora"
-    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m`
-    if (diff < DAY) return `${Math.floor(diff / 3_600_000)}h`
-    if (diff < 7 * DAY) return `${Math.floor(diff / DAY)}d`
-    return date.toLocaleDateString("es-MX", { day: "2-digit", month: "short" })
-  }
 
   type Status = "nuevo" | "activo" | "inactivo" | "dormido"
-  function userStatus(u: (typeof users)[0]): Status {
+  function userStatus(u: { createdAt: Date; lastSeenAt: Date | null }): Status {
     const age  = now.getTime() - u.createdAt.getTime()
     const seen = u.lastSeenAt ? now.getTime() - u.lastSeenAt.getTime() : Infinity
     if (age  <  7 * DAY) return "nuevo"
@@ -53,18 +44,31 @@ export default async function AdminPage() {
     return "dormido"
   }
 
+  const users = dbUsers.map((u) => ({
+    id: u.id,
+    name: u.name,
+    moodleUsername: u.moodleUsername,
+    email: u.email,
+    hasMindbox: !!u.mindboxPassword,
+    createdAt: u.createdAt,
+    lastSeenAt: u.lastSeenAt,
+    status: userStatus(u),
+    noSync: u._count.tasks === 0 && u._count.grades === 0 && u._count.schedule === 0,
+    _count: u._count,
+  }))
+
   // ── Stats ─────────────────────────────────────────────────────────────────
   const totalUsers  = users.length
   const activeToday = users.filter((u) => u.lastSeenAt && now.getTime() - u.lastSeenAt.getTime() < DAY).length
   const activeWeek  = users.filter((u) => u.lastSeenAt && now.getTime() - u.lastSeenAt.getTime() < 7 * DAY).length
-  const withMindbox = users.filter((u) => !!u.mindboxPassword).length
+  const withMindbox = users.filter((u) => u.hasMindbox).length
   const withPush    = users.filter((u) => u._count.pushSubs > 0).length
-  const sinSync     = users.filter((u) => u._count.tasks === 0 && u._count.grades === 0 && u._count.schedule === 0).length
+  const sinSync     = users.filter((u) => u.noSync).length
   const dauWau      = activeWeek > 0 ? Math.round((activeToday / activeWeek) * 100) : 0
 
   // ── Segmentación ──────────────────────────────────────────────────────────
   const segCount: Record<Status, number> = { nuevo: 0, activo: 0, inactivo: 0, dormido: 0 }
-  users.forEach((u) => segCount[userStatus(u)]++)
+  users.forEach((u) => segCount[u.status]++)
 
   const segConfig: Record<Status, { label: string; sub: string; color: string; bg: string; border: string }> = {
     nuevo:    { label: "Nuevos",    sub: "< 7 días",  color: "var(--blue)",  bg: "var(--blue-d)",  border: "var(--blue-b)"  },
@@ -231,11 +235,7 @@ export default async function AdminPage() {
           </div>
 
           {/* ── Users table (client — search + filter) ── */}
-          <AdminUserTable users={users.map((u) => ({
-            ...u,
-            status: userStatus(u),
-            noSync: u._count.tasks === 0 && u._count.grades === 0 && u._count.schedule === 0,
-          }))} />
+          <AdminUserTable users={users} />
 
         </div>
       </div>

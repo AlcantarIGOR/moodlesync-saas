@@ -17,7 +17,7 @@ jobs:
       NEXTAUTH_SECRET: "ci-secret-placeholder"
       NEXTAUTH_URL: "http://localhost:3000"
       MOODLE_BASE_URL: "https://placeholder.tecnm.mx/itcg"
-      ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+      MINDBOX_ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
 
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +32,12 @@ jobs:
 
       - name: Type-check
         run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:run
 
       - name: Build
         run: npm run build

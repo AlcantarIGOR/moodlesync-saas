@@ -314,7 +314,7 @@ export default async function CalificacionesPage() {
             <div className="rounded-2xl p-8 text-center" style={{ background: "var(--card)", border: "1px solid var(--b1)" }}>
               <p className="text-[13px] font-semibold mb-1" style={{ color: "var(--tx)" }}>Sin calificaciones</p>
               <p className="text-[11px] mb-4" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-                Presiona "Sincronizar Mindbox" para cargar tus boletas.
+                Presiona &quot;Sincronizar Mindbox&quot; para cargar tus boletas.
               </p>
             </div>
           ) : (

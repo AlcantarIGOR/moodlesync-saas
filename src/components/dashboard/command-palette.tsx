@@ -210,7 +210,7 @@ export function CommandPalette() {
 
           {allItems.length === 0 && query && (
             <p className="px-4 py-8 text-center text-xs" style={{ fontFamily: "var(--mono)", color: "var(--tx2)" }}>
-              Sin resultados para "{query}"
+              Sin resultados para &ldquo;{query}&rdquo;
             </p>
           )}
         </div>

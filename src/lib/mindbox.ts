@@ -332,7 +332,14 @@ export async function scrapeGradesAndSchedule(
         .filter((r): r is PromiseFulfilledResult<MindboxGrade[]> => r.status === "fulfilled")
         .flatMap((r) => r.value)
     })(),
-    scrapeScheduleWithSession(sess),
+    (async () => {
+      try {
+        return await scrapeScheduleWithSession(sess)
+      } catch (err) {
+        console.warn("[mindbox] No se pudo obtener el horario:", err instanceof Error ? err.message : err)
+        return []
+      }
+    })(),
   ])
 
   return { grades, sessions }

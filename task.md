@@ -4,4 +4,4 @@
 - [x] Borrar ruta obsoleta `/dashboard/upgrade`
 - [x] Actualizar el branding de MoodleSync en metadata (layout.tsx) para enfocarlo 100% al ITCG
 - [x] Validar que la compilación de producción (`npm run build`) pase con éxito
-- [ ] Documentar en walkthrough la configuración de `ADMIN_USER_ID` y Resend en producción
+- [x] Documentar en walkthrough la configuración de `ADMIN_USER_ID` y Resend en producción

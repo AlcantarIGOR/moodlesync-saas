@@ -160,7 +160,9 @@ export function OnboardingTour({ userName }: { userName: string }) {
 
   // ── Show on first visit ──────────────────────────────────────────────────
   useEffect(() => {
-    if (!localStorage.getItem(STORAGE_KEY)) setVisible(true)
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      setTimeout(() => setVisible(true), 0)
+    }
   }, [])
 
   // ── Find spotlight element & update position ─────────────────────────────
@@ -170,7 +172,7 @@ export function OnboardingTour({ userName }: { userName: string }) {
 
     // No selector → clear spot (centered modal) right away
     if (!s.selector) {
-      setSpot(null)
+      setTimeout(() => setSpot(null), 0)
       return
     }
 
@@ -201,14 +203,18 @@ export function OnboardingTour({ userName }: { userName: string }) {
     if (firstRender.current) {
       // Skip transition on very first position set
       firstRender.current = false
+      setTimeout(() => {
+        setTipLeft(pos.left)
+        setTipTop(pos.top)
+        setTipTY(pos.translateY)
+      }, 0)
+      return
+    }
+    setTimeout(() => {
       setTipLeft(pos.left)
       setTipTop(pos.top)
       setTipTY(pos.translateY)
-      return
-    }
-    setTipLeft(pos.left)
-    setTipTop(pos.top)
-    setTipTY(pos.translateY)
+    }, 0)
   }, [spot, step, visible])
 
   // ── Recalculate on resize ─────────────────────────────────────────────────
@@ -224,18 +230,18 @@ export function OnboardingTour({ userName }: { userName: string }) {
     return () => window.removeEventListener("resize", handler)
   }, [visible, step, spot])
 
+  const markDone = useCallback(() => {
+    localStorage.setItem(STORAGE_KEY, "1")
+    setVisible(false)
+  }, [])
+
   // ── Escape → skip ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!visible) return
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") markDone() }
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
-  }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const markDone = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, "1")
-    setVisible(false)
-  }, [])
+  }, [visible, markDone])
 
   function handleBtn() {
     if (step === STEPS.length - 1) {

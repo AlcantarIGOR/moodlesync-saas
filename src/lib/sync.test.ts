@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest"
 import { syncUserTasks } from "./sync"
 import { db } from "./db"
 import { getEnrolledCourses, getCourseAssignments, getSubmissionStatuses } from "./moodle"
+import type { Task } from "@prisma/client"
 
 // Mock the database client
 vi.mock("./db", () => ({
@@ -24,8 +25,8 @@ vi.mock("./moodle", () => ({
 describe("sync.ts - Sincronización de tareas Moodle -> DB", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(db.task.findMany).mockImplementation(async (args: any) => {
-      if (args?.where?.status === "DONE") return []
+    vi.mocked(db.task.findMany).mockImplementation(async (args) => {
+      if (args?.where && "status" in args.where && args.where.status === "DONE") return []
       return []
     })
   })
@@ -130,8 +131,8 @@ describe("sync.ts - Sincronización de tareas Moodle -> DB", () => {
     vi.mocked(getSubmissionStatuses).mockResolvedValue(submissionMap)
 
     // La tarea ya existe en la BD con exactamente los mismos valores
-    vi.mocked(db.task.findMany).mockImplementation(async (args: any) => {
-      if (args?.where?.status === "DONE") return []
+    vi.mocked(db.task.findMany).mockImplementation(async (args) => {
+      if (args?.where && "status" in args.where && args.where.status === "DONE") return []
       return [
         {
           moodleAssignmentId: 5001,
@@ -143,7 +144,7 @@ describe("sync.ts - Sincronización de tareas Moodle -> DB", () => {
           status: "PENDING",
           description: "Hacer 29 consultas en SQL Server",
           attachments: null,
-        } as any,
+        } as unknown as Task,
       ]
     })
 
@@ -179,8 +180,8 @@ describe("sync.ts - Sincronización de tareas Moodle -> DB", () => {
     vi.mocked(getSubmissionStatuses).mockResolvedValue(submissionMap)
 
     // Pero en la base de datos está como PENDING
-    vi.mocked(db.task.findMany).mockImplementation(async (args: any) => {
-      if (args?.where?.status === "DONE") return []
+    vi.mocked(db.task.findMany).mockImplementation(async (args) => {
+      if (args?.where && "status" in args.where && args.where.status === "DONE") return []
       return [
         {
           moodleAssignmentId: 5001,
@@ -192,7 +193,7 @@ describe("sync.ts - Sincronización de tareas Moodle -> DB", () => {
           status: "PENDING",
           description: "Hacer 29 consultas en SQL Server",
           attachments: null,
-        } as any,
+        } as unknown as Task,
       ]
     })
 

@@ -163,6 +163,7 @@ export default async function SettingsPage() {
                   Cierra tu sesión en este dispositivo
                 </p>
               </div>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/api/auth/signout"
                 className="h-9 px-4 rounded-lg text-xs font-semibold flex items-center"

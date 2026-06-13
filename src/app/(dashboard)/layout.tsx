@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   // Badges
   const tasks = await db.task.findMany({ where: { userId: session.user.id }, select: { status: true, dueDate: true } })
-  const now = Date.now()
+  const now = new Date().getTime()
   // Urgentes: vence en los próximos 7 días (aún no pasado)
   const urgent  = tasks.filter((t) => t.status === "PENDING" && t.dueDate && new Date(t.dueDate).getTime() > now && new Date(t.dueDate).getTime() <= now + 7 * 86400000).length
   // Pendientes: vence en > 7 días (futuro, más allá de la ventana urgente) o sin fecha

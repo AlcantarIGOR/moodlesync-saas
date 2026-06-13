@@ -21,7 +21,7 @@ export default async function TareasPage({
     where: {
       userId: session.user.id,
       status: "PENDING",
-      dueDate: { lt: new Date(Date.now() - 10 * 86400000) },
+      dueDate: { lt: new Date(new Date().getTime() - 10 * 86400000) },
     },
     data: { status: "ARCHIVED" },
   }).catch(() => {})

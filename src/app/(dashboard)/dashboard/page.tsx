@@ -34,7 +34,7 @@ export default async function DashboardPage({
 
   // Auto-archive PENDING tasks overdue by more than 10 days (fire-and-forget)
   void db.task.updateMany({
-    where: { userId: session.user.id, status: "PENDING", dueDate: { lt: new Date(Date.now() - 10 * 86400000) } },
+    where: { userId: session.user.id, status: "PENDING", dueDate: { lt: new Date(new Date().getTime() - 10 * 86400000) } },
     data: { status: "ARCHIVED" },
   }).catch(() => {})
 
@@ -228,7 +228,7 @@ export default async function DashboardPage({
           const nextTask = proximas[0]
           if (nextTask) {
             const daysLeft = nextTask.dueDate
-              ? Math.floor((new Date(nextTask.dueDate).getTime() - Date.now()) / 86400000)
+              ? Math.floor((new Date(nextTask.dueDate).getTime() - new Date().getTime()) / 86400000)
               : null
             const whenStr = daysLeft === 0 ? "hoy" : daysLeft === 1 ? "mañana" : `en ${daysLeft}d`
             insights.push({

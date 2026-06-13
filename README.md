@@ -107,6 +107,8 @@ npm run dev       # dev server (Turbopack)
 npm run build     # production build
 npm run start     # serve production build
 npm run lint      # eslint
+npm run test      # correr tests unitarios con vitest (modo interactivo)
+npm run test:run  # correr tests una sola vez (para CI)
 ```
 
 ---
@@ -156,7 +158,7 @@ public/
 
 ## Deploy
 
-Productiva en Vercel, dominio custom `moodlesync.onyxinc.dev`. Pushes a `master` disparan el workflow de CI (`.github/workflows/ci.yml`: type-check + build) y, al pasar, Vercel despliega automaticamente.
+Productiva en Vercel, dominio custom `moodlesync.onyxinc.dev`. Pushes a `master` disparan el workflow de CI (`.github/workflows/ci.yml`: type-check + lint + tests + build) y, al pasar, Vercel despliega automaticamente.
 
 Redirects 308 desde `moodlesync-saas.vercel.app` y previews legacy hacia el dominio custom (configurado en `next.config.ts`).
 
@@ -166,9 +168,9 @@ Redirects 308 desde `moodlesync-saas.vercel.app` y previews legacy hacia el domi
 
 - **Commits:** conventional commits en espanol, sin acentos (`feat:`, `fix(scope):`, `chore:`)
 - **Branch productiva:** `master`
-- **CI:** type-check + build en cada push/PR a `main` o `master`
+- **CI:** type-check + lint + tests + build en cada push/PR a `main` o `master`
 - **Periodo academico actual:** `20261` (Enero-Junio 2026)
-- **Sin tests automatizados** — pendiente: vitest en `src/lib/` (crypto, mindbox, sync)
+- **Tests automatizados:** Pruebas unitarias e integración en `src/lib/` con Vitest (cifrado, sincronización, utilidades de filtrado y rate-limiting)
 
 ---
 

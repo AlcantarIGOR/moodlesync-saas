@@ -120,25 +120,21 @@ export function FocusTimer() {
     }
   }, [mode, selectedTask, tasks, getAudioCtx])
 
-  // Timer tick — keep side effects outside the setState updater to avoid
-  // double-firing in React 18 Strict Mode
+  // Timer tick
   useEffect(() => {
     if (!running) return
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 1) return 0
+        if (prev <= 1) {
+          if (intervalRef.current) clearInterval(intervalRef.current)
+          setTimeout(handleComplete, 0)
+          return 0
+        }
         return prev - 1
       })
     }, 1000)
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [running])
-
-  // Detect timer reaching 0 and trigger completion
-  useEffect(() => {
-    if (timeLeft === 0 && running) {
-      handleComplete()
-    }
-  }, [timeLeft, running, handleComplete])
+  }, [running, handleComplete])
 
   function switchMode(m: Mode) {
     if (intervalRef.current) clearInterval(intervalRef.current)

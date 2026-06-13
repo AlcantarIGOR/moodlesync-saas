@@ -9,7 +9,7 @@ export type AdminUser = {
   name: string | null
   moodleUsername: string | null
   email: string | null
-  mindboxPassword: string | null
+  hasMindbox: boolean
   createdAt: Date
   lastSeenAt: Date | null
   status: Status
@@ -62,9 +62,12 @@ function Chip({ label, color }: { label: string; color?: "green" | "blue" | "amb
   )
 }
 
+const getNow = () => Date.now()
+
 export function AdminUserTable({ users }: { users: AdminUser[] }) {
   const [query,     setQuery]     = useState("")
   const [activeFilter, setFilter] = useState<FilterKey>("todos")
+  const now = useMemo(() => getNow(), [])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -182,7 +185,7 @@ export function AdminUserTable({ users }: { users: AdminUser[] }) {
 
         {filtered.map((u) => {
           const cfg          = segConfig[u.status]
-          const seenRecently = u.lastSeenAt && Date.now() - new Date(u.lastSeenAt).getTime() < 86_400_000
+          const seenRecently = u.lastSeenAt && now - new Date(u.lastSeenAt).getTime() < 86_400_000
 
           return (
             <>
@@ -221,11 +224,11 @@ export function AdminUserTable({ users }: { users: AdminUser[] }) {
                   <span className="text-[9px] rounded px-1.5 py-0.5 font-semibold"
                     style={{
                       fontFamily: "var(--mono)",
-                      background: u.mindboxPassword ? "var(--green-d)" : "var(--s3)",
-                      color:      u.mindboxPassword ? "var(--green)"   : "var(--tx3)",
-                      border:     `1px solid ${u.mindboxPassword ? "var(--green-b)" : "var(--b1)"}`,
+                      background: u.hasMindbox ? "var(--green-d)" : "var(--s3)",
+                      color:      u.hasMindbox ? "var(--green)"   : "var(--tx3)",
+                      border:     `1px solid ${u.hasMindbox ? "var(--green-b)" : "var(--b1)"}`,
                     }}>
-                    {u.mindboxPassword ? "SÍ" : "NO"}
+                    {u.hasMindbox ? "SÍ" : "NO"}
                   </span>
                 </span>
 
@@ -260,7 +263,7 @@ export function AdminUserTable({ users }: { users: AdminUser[] }) {
                   <Chip label={`${u._count.grades} califs`} />
                   <Chip label={`${u._count.schedule} clases`} />
                   <Chip label={`${u._count.notes} notas`} />
-                  {u.mindboxPassword && <Chip label="Mindbox" color="green" />}
+                  {u.hasMindbox && <Chip label="Mindbox" color="green" />}
                   {u.noSync && <Chip label="Sin sync" color="amber" />}
                 </div>
               </div>

@@ -2,11 +2,18 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { scrapeGradesAndSchedule } from "@/lib/mindbox"
 import { decryptPassword } from "@/lib/crypto"
+import { checkRateLimit } from "@/lib/rate-limit"
 import type { Prisma } from "@prisma/client"
 
 export async function POST() {
   const session = await auth()
   if (!session?.user?.id) return Response.json({ error: "No autenticado" }, { status: 401 })
+
+  // Rate limit check: 2 syncs per minute per user
+  const { success } = checkRateLimit(`mindbox:${session.user.id}`, 2, 60 * 1000)
+  if (!success) {
+    return Response.json({ error: "Demasiadas solicitudes de sincronización con Mindbox. Por favor, espera un minuto." }, { status: 429 })
+  }
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
